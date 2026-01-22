@@ -1,18 +1,18 @@
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
-latest_message = ""
+messages = []  # store all messages
 
 @app.route("/send", methods=["POST"])
 def send():
-    global latest_message
     data = request.get_json()
-    latest_message = data.get("text", "")
+    text = data.get("text", "")
+    messages.append(text)
     return jsonify({"status": "ok"})
 
 @app.route("/receive", methods=["GET"])
 def receive():
-    return jsonify({"text": latest_message})
+    return jsonify({"messages": messages})
 
 if __name__ == "__main__":
     app.run()
