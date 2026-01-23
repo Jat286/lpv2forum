@@ -13,6 +13,37 @@ chat_history = {
 # Track online users per room
 rooms_online = {}   # { "general": {"Joh", "Alice"} }
 
+# ----------------------------------------------------
+# Per-device token auth
+# ----------------------------------------------------
+
+# Replace these with your real per-device tokens
+VALID_DEVICE_TOKENS = {
+    "tobytokengjbgrjl",
+    "johtokenfjbalgja",
+    "enzotokenfjlsbdj"
+}
+
+# Track which Socket.IO sessions are authenticated
+authenticated = set()
+
+
+def require_auth():
+    return request.sid in authenticated
+
+
+@socketio.on("auth")
+def handle_auth(data):
+    token = data.get("token")
+
+    if token not in VALID_DEVICE_TOKENS:
+        print(f"Unauthorized device with token: {token}")
+        return False  # disconnect client
+
+    authenticated.add(request.sid)
+    print(f"Device authenticated with token: {token}")
+    emit("auth_ok", {"status": "ok"})
+
 
 # ----------------------------------------------------
 # Trim history helper
@@ -21,11 +52,10 @@ def trim_history(room):
     history = chat_history.get(room, [])
     if len(history) >= 50:
         chat_history[room] = history[-10:]
-        socketio.emit("chat_history", chat_history[room], room=room)
 
 
 # ----------------------------------------------------
-# Optional HTTP endpoints
+# Optional HTTP endpoints (not token-protected here)
 # ----------------------------------------------------
 
 @app.route("/send", methods=["POST"])
@@ -67,6 +97,9 @@ def handle_connect():
 
 @socketio.on("join_room")
 def handle_join(data):
+    if not require_auth():
+        return False
+
     room = data.get("room")
     user = data.get("user", "Unknown")
 
@@ -91,6 +124,9 @@ def handle_join(data):
 
 @socketio.on("leave_room")
 def handle_leave(data):
+    if not require_auth():
+        return False
+
     room = data.get("room")
     user = data.get("user", "Unknown")
 
@@ -116,6 +152,9 @@ def handle_leave(data):
 
 @socketio.on("request_history")
 def handle_history(data):
+    if not require_auth():
+        return False
+
     room = data.get("room") if isinstance(data, dict) else data
 
     if room not in chat_history:
@@ -126,6 +165,9 @@ def handle_history(data):
 
 @socketio.on("send_message")
 def handle_send_message(data):
+    if not require_auth():
+        return False
+
     room = data.get("room", "general")
 
     if room not in chat_history:
@@ -143,6 +185,9 @@ def handle_send_message(data):
 
 @socketio.on("online_request")
 def handle_online_request(data):
+    if not require_auth():
+        return False
+
     room = data.get("room", "general")
 
     online_users = list(rooms_online.get(room, []))
