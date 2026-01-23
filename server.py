@@ -14,9 +14,8 @@ chat_history = {
 # Trim history helper
 # ----------------------------------------------------
 def trim_history(room):
-    """When history reaches 100+, keep only the newest 10 and broadcast."""
     history = chat_history.get(room, [])
-    if len(history) >= 100:
+    if len(history) >= 50:
         chat_history[room] = history[-10:]
         # Send the trimmed history to everyone in the room
         socketio.emit("chat_history", chat_history[room], room=room)
