@@ -56,7 +56,7 @@ def handle_join(data):
         "room": room,
         "user": "SYSTEM",
         "text": f"{user} has joined the room.",
-        "timestamp": datetime.now().strftime("%d/%m/%y %H:%M:%S")
+        "timestamp": datetime.now().strftime("%H:%M:%S")
     }
 
     chat_history.setdefault(room, []).append(system_msg)
@@ -75,7 +75,7 @@ def handle_leave(data):
         "room": room,
         "user": "SYSTEM",
         "text": f"{user} has left the room.",
-        "timestamp": datetime.now().strftime("%d/%m/%y %H:%M:%S")
+        "timestamp": datetime.now().strftime("%H:%M:%S")
     }
 
     chat_history.setdefault(room, []).append(system_msg)
