@@ -82,9 +82,12 @@ def handle_leave(data):
 
 
 @socketio.on("request_history")
-def handle_history(room):
+def handle_history(data):
+    room = data.get("room") if isinstance(data, dict) else data
+
     if room not in chat_history:
         chat_history[room] = []
+
     emit("chat_history", chat_history[room])
 
 
