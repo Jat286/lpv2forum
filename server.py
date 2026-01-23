@@ -44,15 +44,41 @@ def handle_connect():
 
 
 @socketio.on("join_room")
-def handle_join(room):
+def handle_join(data):
+    room = data.get("room")
+    user = data.get("user", "Unknown")
+
     join_room(room)
-    print(f"Client joined room: {room}")
+    print(f"{user} joined room: {room}")
+
+    system_msg = {
+        "room": room,
+        "user": "SYSTEM",
+        "text": f"{user} has joined the room.",
+        "timestamp": datetime.now().strftime("%d/%m/%y %H:%M:%S")
+    }
+
+    chat_history.setdefault(room, []).append(system_msg)
+    emit("new_message", system_msg, room=room)
 
 
 @socketio.on("leave_room")
-def handle_leave(room):
+def handle_leave(data):
+    room = data.get("room")
+    user = data.get("user", "Unknown")
+
     leave_room(room)
-    print(f"Client left room: {room}")
+    print(f"{user} left room: {room}")
+
+    system_msg = {
+        "room": room,
+        "user": "SYSTEM",
+        "text": f"{user} has left the room.",
+        "timestamp": datetime.now().strftime("%d/%m/%y %H:%M:%S")
+    }
+
+    chat_history.setdefault(room, []).append(system_msg)
+    emit("new_message", system_msg, room=room)
 
 
 @socketio.on("request_history")
