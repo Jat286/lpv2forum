@@ -10,22 +10,39 @@ chat_history = {
     "general": []
 }
 
-# -------------------------
+# ----------------------------------------------------
+# Trim history helper
+# ----------------------------------------------------
+def trim_history(room):
+    """Keep only the newest 10 messages if history exceeds 100."""
+    history = chat_history.get(room, [])
+    if len(history) > 100:
+        chat_history[room] = history[-10:]
+
+
+# ----------------------------------------------------
 # Optional HTTP endpoints
-# -------------------------
+# ----------------------------------------------------
 
 @app.route("/send", methods=["POST"])
 def send():
     data = request.get_json()
     text = data.get("text", "")
     room = data.get("room", "general")
+    user = data.get("user", "API")
+    timestamp = datetime.now().strftime("%H:%M:%S")
 
-    if room not in chat_history:
-        chat_history[room] = []
+    msg = {
+        "room": room,
+        "user": user,
+        "text": text,
+        "timestamp": timestamp
+    }
 
-    chat_history[room].append(text)
-    socketio.emit("new_message", text, room=room)
+    chat_history.setdefault(room, []).append(msg)
+    trim_history(room)
 
+    socketio.emit("new_message", msg, room=room)
     return jsonify({"status": "ok"})
 
 
@@ -35,9 +52,9 @@ def receive():
     return jsonify({"messages": chat_history.get(room, [])})
 
 
-# -------------------------
+# ----------------------------------------------------
 # WebSocket events
-# -------------------------
+# ----------------------------------------------------
 
 @socketio.on("connect")
 def handle_connect():
@@ -60,6 +77,8 @@ def handle_join(data):
     }
 
     chat_history.setdefault(room, []).append(system_msg)
+    trim_history(room)
+
     emit("new_message", system_msg, room=room)
 
 
@@ -79,6 +98,8 @@ def handle_leave(data):
     }
 
     chat_history.setdefault(room, []).append(system_msg)
+    trim_history(room)
+
     emit("new_message", system_msg, room=room)
 
 
@@ -100,8 +121,8 @@ def handle_send_message(data):
         chat_history[room] = []
 
     chat_history[room].append(data)
+    trim_history(room)
 
-    # Send only to users in that room
     emit("new_message", data, room=room)
 
 
