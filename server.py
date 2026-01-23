@@ -10,6 +10,10 @@ chat_history = {
     "general": []
 }
 
+# Track online users per room
+rooms_online = {}   # { "general": {"Joh", "Alice"} }
+
+
 # ----------------------------------------------------
 # Trim history helper
 # ----------------------------------------------------
@@ -17,7 +21,6 @@ def trim_history(room):
     history = chat_history.get(room, [])
     if len(history) >= 50:
         chat_history[room] = history[-10:]
-        # Send the trimmed history to everyone in the room
         socketio.emit("chat_history", chat_history[room], room=room)
 
 
@@ -70,6 +73,9 @@ def handle_join(data):
     join_room(room)
     print(f"{user} joined room: {room}")
 
+    # Track user online
+    rooms_online.setdefault(room, set()).add(user)
+
     system_msg = {
         "room": room,
         "user": "SYSTEM",
@@ -90,6 +96,10 @@ def handle_leave(data):
 
     leave_room(room)
     print(f"{user} left room: {room}")
+
+    # Remove user from online list
+    if room in rooms_online and user in rooms_online[room]:
+        rooms_online[room].remove(user)
 
     system_msg = {
         "room": room,
@@ -126,6 +136,24 @@ def handle_send_message(data):
 
     emit("new_message", data, room=room)
 
+
+# ----------------------------------------------------
+# /online support
+# ----------------------------------------------------
+
+@socketio.on("online_request")
+def handle_online_request(data):
+    room = data.get("room", "general")
+
+    online_users = list(rooms_online.get(room, []))
+
+    emit("online_list", {
+        "room": room,
+        "users": online_users
+    }, room=request.sid)
+
+
+# ----------------------------------------------------
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000)
