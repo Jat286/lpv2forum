@@ -208,19 +208,16 @@ def handle_ping_user(data):
     sender = data.get("from")
     target = data.get("to")
 
-    # Check if target is online
+    # If target is not online, send LOCAL ONLY message
     if target not in user_sids:
-        emit("new_message", {
-            "room": "system",
-            "user": "SYSTEM",
-            "text": f"{target} is not online.",
-            "timestamp": datetime.now().strftime("%H:%M:%S")
+        emit("ping_failed", {
+            "to": target,
+            "reason": "offline"
         }, room=request.sid)
         return
 
     target_sid = user_sids[target]
 
-    # Send private ping
     emit("ping_alert", {
         "from": sender
     }, room=target_sid)
