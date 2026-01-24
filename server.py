@@ -198,6 +198,11 @@ def handle_send_message(data):
     chat_history[room].append(data)
     trim_history(room)
 
+    # If trimming happened, resend trimmed history to everyone in the room
+    if len(chat_history[room]) == 10:
+        emit("chat_history", chat_history[room], room=room)
+        return
+
     emit("new_message", data, room=room)
 
 @socketio.on("ping_user")
