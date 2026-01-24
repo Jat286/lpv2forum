@@ -5,6 +5,10 @@ from datetime import datetime
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+# Track which socket belongs to which username
+user_sids = {}      # username -> sid
+sid_users = {}      # sid -> username
+
 # Store chat history per room
 chat_history = {
     "general": []
@@ -103,10 +107,13 @@ def handle_join(data):
     room = data.get("room")
     user = data.get("user", "Unknown")
 
+    # Track username <-> sid
+    user_sids[user] = request.sid
+    sid_users[request.sid] = user
+
     join_room(room)
     print(f"{user} joined room: {room}")
 
-    # Track user online
     rooms_online.setdefault(room, set()).add(user)
 
     system_msg = {
@@ -149,6 +156,21 @@ def handle_leave(data):
 
     emit("new_message", system_msg, room=room)
 
+@socketio.on("disconnect")
+def handle_disconnect():
+    sid = request.sid
+    if sid in sid_users:
+        user = sid_users[sid]
+        print(f"{user} disconnected")
+
+        # Remove from all rooms
+        for room, users in rooms_online.items():
+            if user in users:
+                users.remove(user)
+
+        # Remove from maps
+        del user_sids[user]
+        del sid_users[sid]
 
 @socketio.on("request_history")
 def handle_history(data):
@@ -178,6 +200,32 @@ def handle_send_message(data):
 
     emit("new_message", data, room=room)
 
+@socketio.on("ping_user")
+def handle_ping_user(data):
+    if not require_auth():
+        return False
+
+    sender = data.get("from")
+    target = data.get("to")
+
+    # Check if target is online
+    if target not in user_sids:
+        emit("new_message", {
+            "room": "system",
+            "user": "SYSTEM",
+            "text": f"{target} is not online.",
+            "timestamp": datetime.now().strftime("%H:%M:%S")
+        }, room=request.sid)
+        return
+
+    target_sid = user_sids[target]
+
+    # Send private ping
+    emit("ping_alert", {
+        "from": sender
+    }, room=target_sid)
+
+    print(f"{sender} pinged {target}")
 
 # ----------------------------------------------------
 # /online support
