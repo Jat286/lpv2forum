@@ -98,6 +98,10 @@ def receive():
 def handle_connect():
     print("Client connected")
 
+@socketio.on("ping_dnd")
+def handle_ping_dnd(data):
+    sender = data["to"]
+    emit("ping_dnd", {"to": sender}, room=sender)
 
 @socketio.on("join_room")
 def handle_join(data):
