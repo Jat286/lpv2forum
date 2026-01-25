@@ -132,6 +132,32 @@ def handle_join(data):
 
     emit("new_message", system_msg, room=room)
 
+@socketio.on("join_bg")
+def handle_join(data):
+    if not require_auth():
+        return False
+
+    room = data.get("room")
+    user = data.get("user", "Unknown")
+
+    # Track username <-> sid
+    user_sids[user] = request.sid
+    sid_users[request.sid] = user
+
+    join_room(room)
+    print(f"{user} joined room: {room}")
+
+    rooms_online.setdefault(room, set()).add(user)
+
+    system_msg = {
+        "room": room,
+        "user": "SYSTEM",
+        "text": f"{user} has joined the room.",
+        "timestamp": datetime.now().strftime("%H:%M:%S")
+    }
+
+    chat_history.setdefault(room, []).append(system_msg)
+    trim_history(room)
 
 @socketio.on("leave_room")
 def handle_leave(data):
