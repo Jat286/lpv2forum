@@ -57,6 +57,12 @@ def trim_history(room):
     if len(history) >= 50:
         chat_history[room] = history[-10:]
 
+def broadcast_online(room):
+    online_users = list(rooms_online.get(room, []))
+    socketio.emit("online_list", {
+        "room": room,
+        "users": online_users
+    }, room=room)
 
 # ----------------------------------------------------
 # Optional HTTP endpoints (not token-protected here)
@@ -120,6 +126,8 @@ def handle_join(data):
 
     rooms_online.setdefault(room, set()).add(user)
 
+    broadcast_online(room)
+
     system_msg = {
         "room": room,
         "user": "SYSTEM",
@@ -174,6 +182,8 @@ def handle_leave(data):
     if room in rooms_online and user in rooms_online[room]:
         rooms_online[room].remove(user)
 
+    broadcast_online(room)
+    
     system_msg = {
         "room": room,
         "user": "SYSTEM",
@@ -197,6 +207,7 @@ def handle_disconnect():
         for room, users in rooms_online.items():
             if user in users:
                 users.remove(user)
+                broadcast_online(room)
 
         # Remove from maps
         del user_sids[user]
