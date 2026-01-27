@@ -225,6 +225,22 @@ def handle_history(data):
 
     emit("chat_history", chat_history[room])
 
+@socketio.on("reply")
+def handle_reply(data):
+    if not require_auth():
+        return False
+
+    room = data.get("room", "general")
+    timestamp = data.get("timestamp")
+    user = sid_users.get(request.sid, "Unknown")
+
+    # Broadcast to everyone in the room
+    socketio.emit("highlight_message", {
+        "timestamp": timestamp,
+        "replied_by": user
+    }, room=room)
+
+    print(f"{user} replied to message at {timestamp}")
 
 @socketio.on("send_message")
 def handle_send_message(data):
