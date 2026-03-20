@@ -161,7 +161,7 @@ def handle_join(data):
     system_msg = {
         "room": room,
         "user": "SYSTEM",
-        "text": f"{user} has joined the room.",
+        "text": f"{user} has connected.",
         "timestamp": datetime.now().strftime("%H:%M:%S")
     }
 
@@ -189,6 +189,35 @@ def handle_leave(data):
         "room": room,
         "user": "SYSTEM",
         "text": f"{user} has left the room.",
+        "timestamp": datetime.now().strftime("%H:%M:%S")
+    }
+
+    chat_history.setdefault(room, []).append(system_msg)
+    trim_history(room)
+
+    emit("new_message", system_msg, room=room)
+
+@socketio.on("leave_bg")
+def handle_leave(data):
+    if not require_auth():
+        return False
+
+    room = data.get("room")
+    user = data.get("user", "Unknown")
+
+    leave_room(room)
+    print(f"{user} left room: {room}")
+
+    # Remove user from online list
+    if room in rooms_online and user in rooms_online[room]:
+        rooms_online[room].remove(user)
+
+    broadcast_online(room)
+    
+    system_msg = {
+        "room": room,
+        "user": "SYSTEM",
+        "text": f"{user} has disconnected.",
         "timestamp": datetime.now().strftime("%H:%M:%S")
     }
 
