@@ -52,32 +52,32 @@ def handle_auth(data):
 
 file_buffers = {}
 
-@sio.event
+@socketio.event
 def upload_chunk(sid, payload):
     name = payload["file"]
     chunk = payload["chunk"]
 
     file_buffers.setdefault(name, bytearray()).extend(chunk)
 
-@sio.event
+@socketio.event
 def upload(sid, payload):
     name = payload["file"]
     with open(name, "wb") as f:
         f.write(file_buffers[name])
     del file_buffers[name]
 
-@sio.event
+@socketio.event
 def download(sid, data):
     file = data.get("file")
     try:
         with open(file, "rb") as f:
             while chunk := f.read(4096):
-                sio.emit("download_chunk", {"file": file, "chunk": chunk}, to=sid)
+                socketio.emit("download_chunk", {"file": file, "chunk": chunk}, to=sid)
 
-        sio.emit("download_complete", {"file": file}, to=sid)
+        socketio.emit("download_complete", {"file": file}, to=sid)
 
     except FileNotFoundError:
-        sio.emit("file_error", {"file": file}, to=sid)
+        socketio.emit("file_error", {"file": file}, to=sid)
 
 
 # ----------------------------------------------------
