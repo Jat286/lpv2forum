@@ -59,40 +59,40 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 def get_completed_uploads():
     return [f for f in os.listdir(UPLOAD_DIR)]
 
-@sio.event
+@socketio.event
 def files(sid):
-    sio.emit("server_uploads", {"files" : get_completed_uploads}, to=sid)
+    socketio.emit("server_uploads", {"files" : get_completed_uploads}, to=sid)
 
-@sio.event
+@socketio.event
 def upload_chunk(sid, payload):
     name = payload["file"]
     chunk = payload["chunk"]
 
     file_buffers.setdefault(name, bytearray()).extend(chunk)
 
-@sio.event
+@socketio.event
 def upload_complete(sid, payload):
     try:
         name = payload["file"]
         with open(namos.path.join(UPLOAD_DIR, name), "wb") as f:
             f.write(file_buffers[name])
         del file_buffers[name]
-        sio.emit("upload_complete", {"file": name}, to=sid)
+        socketio.emit("upload_complete", {"file": name}, to=sid)
     except:
-        sio.emit("upload_error", {"file": name}, to=sid)
+        socketio.emit("upload_error", {"file": name}, to=sid)
 
-@sio.event
+@socketio.event
 def download(sid, data):
     file = data.get("file")
     try:
         with open(os.path.join(UPLOAD_DIR, file), "rb") as f:
             while chunk := f.read(4096):
-                sio.emit("download_chunk", {"file": file, "chunk": chunk}, to=sid)
+                socketio.emit("download_chunk", {"file": file, "chunk": chunk}, to=sid)
 
-        sio.emit("download_complete", {"file": file}, to=sid)
+        socketio.emit("download_complete", {"file": file}, to=sid)
 
     except FileNotFoundError:
-        sio.emit("download_error", {"file": file}, to=sid)
+        socketio.emit("download_error", {"file": file}, to=sid)
 
 # ----------------------------------------------------
 # Trim history helper
