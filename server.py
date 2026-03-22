@@ -60,18 +60,18 @@ def get_completed_uploads():
     return [f for f in os.listdir(UPLOAD_DIR)]
 
 @socketio.event
-def files(sid):
+def files():
     socketio.emit("server_uploads", {"files" : get_completed_uploads}, to=sid)
 
 @socketio.event
-def upload_chunk(sid, payload):
+def upload_chunk(payload):
     name = payload["file"]
     chunk = payload["chunk"]
 
     file_buffers.setdefault(name, bytearray()).extend(chunk)
 
 @socketio.event
-def upload_complete(sid, payload):
+def upload_complete(payload):
     try:
         name = payload["file"]
         with open(namos.path.join(UPLOAD_DIR, name), "wb") as f:
@@ -82,7 +82,7 @@ def upload_complete(sid, payload):
         socketio.emit("upload_error", {"file": name}, to=sid)
 
 @socketio.event
-def download(sid, data):
+def download(data):
     file = data.get("file")
     try:
         with open(os.path.join(UPLOAD_DIR, file), "rb") as f:
