@@ -60,7 +60,7 @@ def upload_chunk(sid, payload):
     file_buffers.setdefault(name, bytearray()).extend(chunk)
 
 @socketio.event
-def upload(sid, payload):
+def upload_complete(sid, payload):
     name = payload["file"]
     with open(name, "wb") as f:
         f.write(file_buffers[name])
