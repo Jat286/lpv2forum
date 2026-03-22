@@ -61,6 +61,7 @@ def get_completed_uploads():
 
 @socketio.event
 def files():
+    sid = request.sid
     socketio.emit("server_uploads", {"files" : get_completed_uploads}, to=sid)
 
 @socketio.event
@@ -72,9 +73,10 @@ def upload_chunk(payload):
 
 @socketio.event
 def upload_complete(payload):
+    sid = request.sid
     try:
         name = payload["file"]
-        with open(namos.path.join(UPLOAD_DIR, name), "wb") as f:
+        with open(os.path.join(UPLOAD_DIR, name), "wb") as f:
             f.write(file_buffers[name])
         del file_buffers[name]
         socketio.emit("upload_complete", {"file": name}, to=sid)
@@ -84,6 +86,7 @@ def upload_complete(payload):
 @socketio.event
 def download(data):
     file = data.get("file")
+    sid = request.sid
     try:
         with open(os.path.join(UPLOAD_DIR, file), "rb") as f:
             while chunk := f.read(4096):
