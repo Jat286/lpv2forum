@@ -62,7 +62,7 @@ def get_completed_uploads():
 @socketio.event
 def files():
     sid = request.sid
-    socketio.emit("server_uploads", {"files" : get_completed_uploads}, to=sid)
+    socketio.emit("server_uploads", {"files" : get_completed_uploads()}, to=sid)
 
 @socketio.event
 def upload_chunk(payload):
