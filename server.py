@@ -89,15 +89,15 @@ def download(data):
     try:
         with open(os.path.join(UPLOAD_DIR, file), "rb") as f:
             while chunk := f.read(4096):
-                sio.emit("download_chunk", {"file": file, "chunk": chunk}, to=request.sid)
+                socketio.emit("download_chunk", {"file": file, "chunk": chunk}, to=request.sid)
         
         if data.get("on_complete", 0) == 1:
-            sio.emit("view_download_complete", {"file": file}, to=request.sid)
+            socketio.emit("view_download_complete", {"file": file}, to=request.sid)
         else:
-            sio.emit("download_complete", {"file": file}, to=request.sid)
+            socketio.emit("download_complete", {"file": file}, to=request.sid)
 
     except FileNotFoundError:
-        sio.emit("download_error", {"file": file}, to=request.sid)
+        socketio.emit("download_error", {"file": file}, to=request.sid)
 
 # ----------------------------------------------------
 # Trim history helper
