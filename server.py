@@ -84,7 +84,7 @@ def upload_complete(payload):
         socketio.emit("upload_error", {"file": name}, to=sid)
 
 @socketio.event
-def download(data):
+def download(sid, data):
     file = data.get("file")
     try:
         with open(os.path.join(UPLOAD_DIR, file), "rb") as f:
