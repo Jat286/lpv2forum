@@ -203,7 +203,7 @@ def handle_join(data):
     sid_users[request.sid] = user
 
     join_room(room)
-    print(f"{user} joined room: {room}")
+    print(f"{user} has connected.")
 
     rooms_online.setdefault(room, set()).add(user)
 
@@ -280,7 +280,7 @@ def handle_disconnect():
     sid = request.sid
     if sid in sid_users:
         user = sid_users[sid]
-        print(f"{user} disconnected")
+        print(f"{user} disconnected!")
 
         # Remove from all rooms
         for room, users in rooms_online.items():
