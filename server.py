@@ -83,7 +83,7 @@ def upload_complete(payload):
     except:
         socketio.emit("upload_error", {"file": name}, to=sid)
 
-@sio.event
+@socketio.event
 def download(data):
     file = data.get("file")
     try:
