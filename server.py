@@ -83,19 +83,21 @@ def upload_complete(payload):
     except:
         socketio.emit("upload_error", {"file": name}, to=sid)
 
-@socketio.event
+@sio.event
 def download(data):
     file = data.get("file")
-    sid = request.sid
     try:
         with open(os.path.join(UPLOAD_DIR, file), "rb") as f:
             while chunk := f.read(4096):
-                socketio.emit("download_chunk", {"file": file, "chunk": chunk}, to=sid)
-
-        socketio.emit("download_complete", {"file": file}, to=sid)
+                sio.emit("download_chunk", {"file": file, "chunk": chunk}, to=sid)
+        
+        if data.get("on_complete", 0) == 1:
+            sio.emit("view_download_complete", {"file": file}, to=sid)
+        else:
+            sio.emit("download_complete", {"file": file}, to=sid)
 
     except FileNotFoundError:
-        socketio.emit("download_error", {"file": file}, to=sid)
+        sio.emit("download_error", {"file": file}, to=sid)
 
 # ----------------------------------------------------
 # Trim history helper
