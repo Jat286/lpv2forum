@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", transports=["websocket"])
 
 # Track which socket belongs to which username
 user_sids = {}      # username -> sid
@@ -119,8 +119,10 @@ def broadcast_online(room):
 # ----------------------------------------------------
 
 @socketio.on("connect")
-def handle_connect():
-    print("Client connected")
+def handle_connect(auth):
+    token = auth.get("token") if auth else None
+    if token not in VALID_DEVICE_TOKENS:
+        return False
 
 @socketio.on("ping_dnd")
 def handle_ping_dnd(data):
