@@ -115,38 +115,6 @@ def broadcast_online(room):
     }, room=room)
 
 # ----------------------------------------------------
-# Optional HTTP endpoints (not token-protected here)
-# ----------------------------------------------------
-
-@app.route("/send", methods=["POST"])
-def send():
-    data = request.get_json()
-    text = data.get("text", "")
-    room = data.get("room", "general")
-    user = data.get("user", "API")
-    timestamp = datetime.now().strftime("%H:%M:%S")
-
-    msg = {
-        "room": room,
-        "user": user,
-        "text": text,
-        "timestamp": timestamp
-    }
-
-    chat_history.setdefault(room, []).append(msg)
-    trim_history(room)
-
-    socketio.emit("new_message", msg, room=room)
-    return jsonify({"status": "ok"})
-
-
-@app.route("/receive", methods=["GET"])
-def receive():
-    room = request.args.get("room", "general")
-    return jsonify({"messages": chat_history.get(room, [])})
-
-
-# ----------------------------------------------------
 # WebSocket events
 # ----------------------------------------------------
 
