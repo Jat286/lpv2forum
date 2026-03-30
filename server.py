@@ -144,7 +144,7 @@ def handle_connect(auth):
     if token not in VALID_DEVICE_TOKENS:
         return False
 
-    autenticated.add(request.sid)
+    authenticated.add(request.sid)
 
 @socketio.on("ping_dnd")
 def handle_ping_dnd(data):
