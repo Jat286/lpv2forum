@@ -123,6 +123,8 @@ def handle_connect(auth):
     token = auth.get("token") if auth else None
     if token not in VALID_DEVICE_TOKENS:
         return False
+   
+    authenticated.add(request.sid)
 
 @socketio.on("ping_dnd")
 def handle_ping_dnd(data):
