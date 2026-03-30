@@ -120,6 +120,8 @@ def broadcast_online(room):
 
 @socketio.on("connect")
 def handle_connect(auth):
+    if token is None:
+        return
     token = auth.get("token") if auth else None
     if token not in VALID_DEVICE_TOKENS:
         return False
