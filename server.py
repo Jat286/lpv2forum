@@ -78,6 +78,7 @@ def request_latest():
         socketio.emit("server_uploads", {"files" : []})
         return None
     file = max(files, key=os.path.getctime) # latest
+    file = os.path.basename(file)
     try: # same as download but assumes on_complete is 1
         with open(file, "rb") as f:
             while chunk := f.read(4096):
