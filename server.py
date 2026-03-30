@@ -86,8 +86,8 @@ def request_latest():
        
             socketio.emit("view_download_complete", {"file": file}, to=request.sid)
 
-    except FileNotFoundError:
-        socketio.emit("download_error", {"file": file}, to=request.sid)
+    #except FileNotFoundError:
+     #   socketio.emit("download_error", {"file": file}, to=request.sid)
 
 @socketio.event
 def upload_complete(payload):
