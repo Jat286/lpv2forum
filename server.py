@@ -73,8 +73,7 @@ def upload_chunk(payload):
 
 @socketio.event
 def request_latest():
-    path = os.path.join(UPLOAD_DIR, f)
-    files = [path for f in os.listdir(UPLOAD_DIR) if os.path.isfile(path) and f.lower().endswith(".png")] # gets all of the server's files
+    files = [os.path.join(UPLOAD_DIR, f) for f in os.listdir(UPLOAD_DIR) if os.path.isfile(os.path.join(UPLOAD_DIR, f)) and f.lower().endswith(".png")] # gets all of the server's files
     if len(files) == 0:
         socketio.emit("server_uploads", {"files" : []})
         return None
