@@ -72,6 +72,24 @@ def upload_chunk(payload):
     file_buffers.setdefault(name, bytearray()).extend(chunk)
 
 @socketio.event
+def request_latest():
+    path = os.path.join(UPLOAD_DIR, f)
+    files = [path for f in os.listdir(UPLOAD_DIR) if os.path.isfile(path) and f.lower().endswith(".png")] # gets all of the server's files
+    if len(files) == 0:
+        socketio.emit("server_uploads", {"files" : []})
+        return None
+    file = max(files, key=os.path.getctime) # latest
+    try: # same as download but assumes on_complete is 1
+        with open(file, "rb") as f:
+            while chunk := f.read(4096):
+                socketio.emit("download_chunk", {"file": file, "chunk": chunk}, to=request.sid)
+       
+            socketio.emit("view_download_complete", {"file": file}, to=request.sid)
+
+    except FileNotFoundError:
+        socketio.emit("download_error", {"file": file}, to=request.sid)
+
+@socketio.event
 def upload_complete(payload):
     sid = request.sid
     try:
