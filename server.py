@@ -78,13 +78,13 @@ def request_latest():
         socketio.emit("server_uploads", {"files" : []})
         return None
     file = max(files, key=os.path.getctime) # latest
-    file = os.path.basename(file)
+    filename = os.path.basename(file)
     #try: # same as download but assumes on_complete is 1
     with open(file, "rb") as f:
         while chunk := f.read(4096):
-            socketio.emit("download_chunk", {"file": file, "chunk": chunk}, to=request.sid)
+            socketio.emit("download_chunk", {"file": filename, "chunk": chunk}, to=request.sid)
        
-            socketio.emit("view_download_complete", {"file": file}, to=request.sid)
+            socketio.emit("view_download_complete", {"file": filename}, to=request.sid)
 
     #except FileNotFoundError:
      #   socketio.emit("download_error", {"file": file}, to=request.sid)
