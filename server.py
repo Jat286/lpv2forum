@@ -84,7 +84,7 @@ def request_latest():
         while chunk := f.read(4096):
             socketio.emit("download_chunk", {"file": filename, "chunk": chunk}, to=request.sid)
        
-            socketio.emit("view_download_complete", {"file": filename}, to=request.sid)
+        socketio.emit("view_download_complete", {"file": filename}, to=request.sid)
 
     #except FileNotFoundError:
      #   socketio.emit("download_error", {"file": file}, to=request.sid)
