@@ -109,9 +109,9 @@ def upload_complete(payload):
         filename = os.path.basename(file)
         with open(file, "rb") as f:
             while chunk := f.read(4096):
-                socketio.emit("download_chunk", {"file": filename, "chunk": chunk}, to=sid)
+                socketio.emit("download_chunk", {"file": filename, "chunk": chunk})
            
-            socketio.emit("view_download_complete", {"file": filename}, to=sid)
+            socketio.emit("view_download_complete", {"file": filename})
 
 
     
