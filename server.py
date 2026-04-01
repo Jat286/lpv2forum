@@ -98,7 +98,23 @@ def upload_complete(payload):
             f.write(file_buffers[name])
         del file_buffers[name]
         socketio.emit("upload_complete", {"file": name}, to=sid)
-        socketio.emit("view_download_complete", {"file": filename}, to=sid)
+
+
+        
+        files = [os.path.join(UPLOAD_DIR, f) for f in os.listdir(UPLOAD_DIR) if os.path.isfile(os.path.join(UPLOAD_DIR, f)) and f.lower().endswith(".png")] # gets all of the server's files
+        if len(files) == 0:
+            socketio.emit("server_uploads", {"files" : []})
+            return None
+        file = max(files, key=os.path.getctime) # latest
+        filename = os.path.basename(file)
+        with open(file, "rb") as f:
+            while chunk := f.read(4096):
+                socketio.emit("download_chunk", {"file": filename, "chunk": chunk}, to=sid)
+           
+            socketio.emit("view_download_complete", {"file": filename}, to=sid)
+
+
+    
     except:
         socketio.emit("upload_error", {"file": name}, to=sid)
 
