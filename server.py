@@ -98,6 +98,7 @@ def upload_complete(payload):
             f.write(file_buffers[name])
         del file_buffers[name]
         socketio.emit("upload_complete", {"file": name}, to=sid)
+        socketio.emit("view_download_complete", {"file": filename}, to=sid)
     except:
         socketio.emit("upload_error", {"file": name}, to=sid)
 
