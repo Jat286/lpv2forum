@@ -9,8 +9,6 @@ socketio = SocketIO(app, cors_allowed_origins="*", transports=["websocket"])
 # Track which socket belongs to which username
 user_sids = {}      # username -> sid
 sid_users = {}      # sid -> username
-token_sids = {}
-sid_tokens = {}
 
 # Store chat history per room
 chat_history = {
@@ -28,23 +26,18 @@ rooms_online = {}   # { "general": {"Joh", "Alice"} }
 VALID_DEVICE_TOKENS = {
     "tobytokengjbgrjl",
     "johtokenfjbalgja",
-    "enzotokenfjlsbdj",
-    "jonahtokendsfieh",
+    "enzotokenfjlsbdj"
+    "jonahtokendsfieh"
     "theotokenafeeisd"
 }
 
 # Track which Socket.IO sessions are authenticated
 authenticated = set()
 
-def emit_sid(event, data, to=None):
-    token = sid_tokens.get(to, None)
-    if not token:
-        return None
-    for s in token_sids.get(token, []):
-        socketio.emit(event, data, to=s)
 
 def require_auth():
     return request.sid in authenticated
+
 
 @socketio.on("auth")
 def handle_auth(data):
@@ -56,7 +49,8 @@ def handle_auth(data):
 
     authenticated.add(request.sid)
     print(f"Device authenticated with token: {token}")
-    emit_sid("auth_ok", {"status": "ok"})
+    emit("auth_ok", {"status": "ok"})
+
 
 file_buffers = {}
 
@@ -69,7 +63,7 @@ def get_completed_uploads():
 @socketio.event
 def files():
     sid = request.sid
-    emit("server_uploads", {"files" : get_completed_uploads()}, to=sid)
+    socketio.emit("server_uploads", {"files" : get_completed_uploads()}, to=sid)
 
 @socketio.event
 def upload_chunk(payload):
@@ -80,11 +74,7 @@ def upload_chunk(payload):
 
 @socketio.event
 def request_latest(data):
-    view = bool(data.get("on_complete", 0))
-    if view:
-        files = [os.path.join(UPLOAD_DIR, f) for f in os.listdir(UPLOAD_DIR) if os.path.isfile(os.path.join(UPLOAD_DIR, f)) and f.lower().endswith((".png", ".jpg", ".jpeg"))] # gets all of the server's files
-    else:
-        files = [os.path.join(UPLOAD_DIR, f) for f in os.listdir(UPLOAD_DIR) if os.path.isfile(os.path.join(UPLOAD_DIR, f))]
+    files = [os.path.join(UPLOAD_DIR, f) for f in os.listdir(UPLOAD_DIR) if os.path.isfile(os.path.join(UPLOAD_DIR, f)) and f.lower().endswith((".png", ".jpg", ".jpeg"))] # gets all of the server's files
     if len(files) == 0:
         socketio.emit("server_uploads", {"files" : []})
         return None
@@ -93,15 +83,15 @@ def request_latest(data):
     #try: # same as download but assumes on_complete is 1
     with open(file, "rb") as f:
         while chunk := f.read(4096):
-            emit_sid("download_chunk", {"file": filename, "chunk": chunk}, to=request.sid)
+            socketio.emit("download_chunk", {"file": filename, "chunk": chunk}, to=request.sid)
        
-        if view:
-            emit_sid("view_download_complete", {"file": filename}, to=request.sid)
+        if data.get("on_complete", 0) == 1:
+            socketio.emit("view_download_complete", {"file": filename}, to=request.sid)
         else:
-            emit_sid("download_complete", {"file": filename}, to=request.sid)
+            socketio.emit("download_complete", {"file": filename}, to=request.sid)
 
     #except FileNotFoundError:
-     #   socketio.emit_sid("download_error", {"file": file}, to=request.sid)
+     #   socketio.emit("download_error", {"file": file}, to=request.sid)
 
 @socketio.event
 def upload_complete(payload):
@@ -111,23 +101,26 @@ def upload_complete(payload):
         with open(os.path.join(UPLOAD_DIR, name), "wb") as f:
             f.write(file_buffers[name])
         del file_buffers[name]
-        emit_sid("upload_complete", {"file": name}, to=sid)
+        socketio.emit("upload_complete", {"file": name}, to=sid)
 
-        if name.lower().endswith((".png", ".jpg", ".jpeg")):
-            files = [os.path.join(UPLOAD_DIR, f) for f in os.listdir(UPLOAD_DIR) if os.path.isfile(os.path.join(UPLOAD_DIR, f)) and f.lower().endswith((".png", ".jpg", ".jpeg"))] # gets all of the server's files
-            if len(files) == 0:
-                socketio.emit("server_uploads", {"files" : []})
-                return None
-            file = max(files, key=os.path.getctime) # latest
-            filename = os.path.basename(file)
-            with open(file, "rb") as f:
-                while chunk := f.read(4096):
-                    socketio.emit("download_chunk", {"file": filename, "chunk": chunk})
-            
-                socketio.emit("view_download_complete", {"file": filename})
 
+        
+        files = [os.path.join(UPLOAD_DIR, f) for f in os.listdir(UPLOAD_DIR) if os.path.isfile(os.path.join(UPLOAD_DIR, f)) and f.lower().endswith((".png", ".jpg", ".jpeg"))] # gets all of the server's files
+        if len(files) == 0:
+            socketio.emit("server_uploads", {"files" : []})
+            return None
+        file = max(files, key=os.path.getctime) # latest
+        filename = os.path.basename(file)
+        with open(file, "rb") as f:
+            while chunk := f.read(4096):
+                socketio.emit("download_chunk", {"file": filename, "chunk": chunk})
+           
+            socketio.emit("view_download_complete", {"file": filename})
+
+
+    
     except:
-        emit_sid("upload_error", {"file": name}, to=sid)
+        socketio.emit("upload_error", {"file": name}, to=sid)
 
 @socketio.event
 def download(data):
@@ -167,18 +160,17 @@ def broadcast_online(room):
 @socketio.on("connect")
 def handle_connect(auth):
     token = auth.get("token") if auth else None
-    if token is None or token not in VALID_DEVICE_TOKENS:
+    if token is None:
+        return
+    if token not in VALID_DEVICE_TOKENS:
         return False
 
-    sid = request.sid
-    authenticated.add(sid)
-    token_sids.setdefault(token, set()).add(sid)
-    sid_tokens[sid] = token
+    authenticated.add(request.sid)
 
 @socketio.on("ping_dnd")
 def handle_ping_dnd(data):
     sender = data["to"]
-    emit_sid("ping_dnd", {"to": sender}, room=sender)
+    emit("ping_dnd", {"to": sender}, room=sender)
 
 @socketio.on("join_room")
 def handle_join(data):
@@ -265,7 +257,7 @@ def handle_leave(data):
     chat_history.setdefault(room, []).append(system_msg)
     trim_history(room)
 
-    socketio.emit("new_message", system_msg, room=room)
+    emit("new_message", system_msg, room=room)
 
 @socketio.on("leave_bg")
 def handle_leave(data):
@@ -294,7 +286,7 @@ def handle_leave(data):
     chat_history.setdefault(room, []).append(system_msg)
     trim_history(room)
 
-    socketio.emit("new_message", system_msg, room=room)
+    emit("new_message", system_msg, room=room)
 
 @socketio.on("disconnect")
 def handle_disconnect():
@@ -310,12 +302,6 @@ def handle_disconnect():
                 broadcast_online(room)
 
         # Remove from maps
-        token = sid_tokens.get(sid)
-        if token:
-            token_sids[token].remove(sid)
-            if not token_sids[token]:
-                del token_sids[token]
-            del sid_tokens[sid]
         del user_sids[user]
         del sid_users[sid]
 
@@ -329,7 +315,7 @@ def handle_history(data):
     if room not in chat_history:
         chat_history[room] = []
 
-    socketio.emit("chat_history", chat_history[room])
+    emit("chat_history", chat_history[room])
 
 @socketio.on("reply")
 def handle_reply(data):
@@ -363,10 +349,10 @@ def handle_send_message(data):
 
     # If trimming happened, resend trimmed history to everyone in the room
     if len(chat_history[room]) == 10:
-        socketio.emit("chat_history", chat_history[room], room=room)
+        emit("chat_history", chat_history[room], room=room)
         return
 
-    socketio.emit("new_message", data, room=room)
+    emit("new_message", data, room=room)
 
 @socketio.on("ping_user")
 def handle_ping_user(data):
@@ -379,7 +365,7 @@ def handle_ping_user(data):
 
     # If target is not online, send LOCAL ONLY message
     if target not in user_sids:
-        socketio.emit("ping_failed", {
+        emit("ping_failed", {
             "to": target,
             "reason": "offline"
         }, room=request.sid)
@@ -387,7 +373,7 @@ def handle_ping_user(data):
 
     target_sid = user_sids[target]
 
-    socketio.emit("ping_alert", {
+    emit("ping_alert", {
         "from": sender,
         "message": message
     }, room=target_sid)
@@ -407,7 +393,7 @@ def handle_online_request(data):
 
     online_users = list(rooms_online.get(room, []))
 
-    socketio.emit("online_list", {
+    emit("online_list", {
         "room": room,
         "users": online_users
     }, room=request.sid)
