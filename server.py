@@ -361,6 +361,7 @@ def handle_ping_user(data):
 
     sender = data.get("from")
     target = data.get("to")
+    message = data.get("message", "")
 
     # If target is not online, send LOCAL ONLY message
     if target not in user_sids:
@@ -374,6 +375,7 @@ def handle_ping_user(data):
 
     emit("ping_alert", {
         "from": sender
+        "message": message
     }, room=target_sid)
 
     print(f"{sender} pinged {target}")
