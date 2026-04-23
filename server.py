@@ -374,7 +374,7 @@ def handle_ping_user(data):
     target_sid = user_sids[target]
 
     emit("ping_alert", {
-        "from": sender
+        "from": sender,
         "message": message
     }, room=target_sid)
 
