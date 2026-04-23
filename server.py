@@ -86,9 +86,9 @@ def request_latest(data):
             socketio.emit("download_chunk", {"file": filename, "chunk": chunk}, to=request.sid)
        
         if data.get("on_complete", 0) == 1:
-            socketio.emit("view_download_complete", {"file": file}, to=request.sid)
+            socketio.emit("view_download_complete", {"file": filename}, to=request.sid)
         else:
-            socketio.emit("download_complete", {"file": file}, to=request.sid)
+            socketio.emit("download_complete", {"file": filename}, to=request.sid)
 
     #except FileNotFoundError:
      #   socketio.emit("download_error", {"file": file}, to=request.sid)
