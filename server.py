@@ -39,7 +39,7 @@ authenticated = set()
 
 def return_main(sids):
     for sid in sids:
-        role == sid_roles.get(sid, "main"):
+        role = sid_roles.get(sid, "main")
         if role == "main":
             return sid
     return sids[0]
