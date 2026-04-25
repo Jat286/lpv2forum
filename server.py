@@ -289,6 +289,7 @@ def handle_leave_main(data):
 
 @socketio.on("leave_bg")
 def handle_leave_bg(data):
+    print("handle_leave_bg triggered")
     if not require_auth():
         return False
 
