@@ -321,15 +321,14 @@ def handle_leave_bg(data):
 @socketio.on("disconnect")
 def handle_disconnect():
     print("DISCONNECT EVENT:", {
-        
+        "disconnecting_sid": sid,
+        "disconnecting_user": sid_users.get(sid),
+        "authenticated_before": authenticated.copy(),
+    })
     sid = request.sid
     if sid in sid_users:
         user = sid_users[sid]
         print(f"{user} disconnected!")
-            "disconnecting_sid": sid,
-            "disconnecting_user": sid_users.get(sid),
-            "authenticated_before": authenticated.copy(),
-        })
         # Remove from all rooms
         for room, users in rooms_online.items():
             if user in users:
