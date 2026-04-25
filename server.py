@@ -328,18 +328,18 @@ def handle_disconnect():
         # Remove from all rooms
         for room, users in rooms_online.items():
             if user in users:
-                users.remove(user)
+                users.discard(user)
                 broadcast_online(room)
 
         # Remove from maps
         token = sid_tokens.get(sid)
         if token:
-            token_sids[token].remove(sid)
-            if not token_sids[token]:
-                del token_sids[token]
-            del sid_tokens[sid]
-        del user_sids[user]
-        del sid_users[sid]
+            token_sids.get(token, set()).discard(sid)
+            if not token_sids.get(token):
+                token_sids.pop(token, None)
+        user_sids.pop(user, None)
+        sid_users.pop(sid, None)
+        authenticated.discard(sid)
 
 @socketio.on("request_history")
 def handle_history(data):
