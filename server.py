@@ -41,18 +41,22 @@ def return_main(sids):
     for sid in sids:
         role = sid_roles.get(sid, "main")
         if role == "main":
+            print("return sid")
             return sid
     return sids[0]
 
 def emit_sid(event, data, to=None):
     if to is None:
         return False
+    print("returned false (to is none)")
     token = sid_tokens.get(to, None)
     if token is None:
         return False
+    print("returned false (token is none)")
     sids = token_sids.get(token, [])
     if not sids:
         return False
+    print("returned false (not sids)")
     sid = return_main(sids)
     socketio.emit(event, data, to=sid)
     return True
@@ -400,12 +404,13 @@ def handle_ping_user(data):
             "reason": "offline"
         }, room=request.sid)
         return None
+    print("iftargetnotinusersids")
 
     success = emit_sid("ping_alert", {
         "from": sender,
         "message": message
     }, to=user_sids[target])
-    
+    print(success)
     if not success:
         emit("ping_failed", {
             "to": target,
