@@ -320,12 +320,12 @@ def handle_leave_bg(data):
 
 @socketio.on("disconnect")
 def handle_disconnect():
+    sid = request.sid
     print("DISCONNECT EVENT:", {
         "disconnecting_sid": sid,
         "disconnecting_user": sid_users.get(sid),
         "authenticated_before": authenticated.copy(),
     })
-    sid = request.sid
     if sid in sid_users:
         user = sid_users[sid]
         print(f"{user} disconnected!")
