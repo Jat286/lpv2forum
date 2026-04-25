@@ -63,6 +63,7 @@ def emit_sid(event, data, to=None):
 
 def require_auth():
     return request.sid in authenticated
+    print("AUTH CHECK:", request.sid, request.sid in authenticated, authenticated)
 
 @socketio.on("auth")
 def handle_auth(data):
