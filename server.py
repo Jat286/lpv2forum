@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from datetime import datetime
 import os
-
+print("printing works")
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", transports=["websocket"])
 
@@ -320,11 +320,16 @@ def handle_leave_bg(data):
 
 @socketio.on("disconnect")
 def handle_disconnect():
+    print("DISCONNECT EVENT:", {
+        
     sid = request.sid
     if sid in sid_users:
         user = sid_users[sid]
         print(f"{user} disconnected!")
-
+            "disconnecting_sid": sid,
+            "disconnecting_user": sid_users.get(sid),
+            "authenticated_before": authenticated.copy(),
+        })
         # Remove from all rooms
         for room, users in rooms_online.items():
             if user in users:
@@ -340,6 +345,7 @@ def handle_disconnect():
         user_sids.pop(user, None)
         sid_users.pop(sid, None)
         authenticated.discard(sid)
+        print("AUTHENTICATED_AFTER:", authenticated)
 
 @socketio.on("request_history")
 def handle_history(data):
