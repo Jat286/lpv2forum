@@ -397,7 +397,7 @@ def handle_ping_user(data):
     sender = data.get("from")
     target = data.get("to")
     message = data.get("message", "")
-
+    print(user_sids.keys())
     # If target is not online, send LOCAL ONLY message
     if target not in user_sids:
         emit("ping_failed", {
