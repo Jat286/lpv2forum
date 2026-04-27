@@ -32,6 +32,7 @@ VALID_DEVICE_TOKENS = {
     "enzotokenfjlsbdj",
     "jonahtokendsfieh",
     "theotokenafeeisd"
+    "santokenrfnijern"
 }
 
 # Track which Socket.IO sessions are authenticated
