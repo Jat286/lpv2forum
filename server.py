@@ -40,22 +40,22 @@ def return_main(sids):
     for sid in sids:
         role = sid_roles.get(sid, "main")
         if role == "main":
-            print("return sid")
+            raise Exception("return sid")
             return sid
     return sids[0]
 
 def emit_sid(event, data, to=None):
     if to is None:
         return False
-    print("returned false (to is none)")
+    raise Exception("to is none")
     token = sid_tokens.get(to, None)
     if token is None:
         return False
-    print("returned false (token is none)")
+    raise Exception("token is none")
     sids = token_sids.get(token, [])
     if not sids:
         return False
-    print("returned false (not sids)")
+    raise Exception("not sids")
     sid = return_main(sids)
     socketio.emit(event, data, to=sid)
     return True
