@@ -40,22 +40,18 @@ def return_main(sids):
     for sid in sids:
         role = sid_roles.get(sid, "main")
         if role == "main":
-            raise Exception("return sid")
             return sid
     return sids[0]
 
 def emit_sid(event, data, to=None):
     if to is None:
         return False
-    raise Exception("to is none")
     token = sid_tokens.get(to, None)
     if token is None:
         return False
-    raise Exception("token is none")
     sids = token_sids.get(token, [])
     if not sids:
         return False
-    raise Exception("not sids")
     sid = return_main(sids)
     socketio.emit(event, data, to=sid)
     return True
@@ -98,6 +94,7 @@ def upload_chunk(payload):
 
 @socketio.event
 def request_latest(data):
+    sid = request.sid
     view = bool(data.get("on_complete", 0))
     if view:
         files = [os.path.join(UPLOAD_DIR, f) for f in os.listdir(UPLOAD_DIR) if os.path.isfile(os.path.join(UPLOAD_DIR, f)) and f.lower().endswith((".png", ".jpg", ".jpeg"))] # gets all of the server's files
@@ -111,15 +108,15 @@ def request_latest(data):
     try: # same as download but assumes on_complete is 1
         with open(file, "rb") as f:
             while chunk := f.read(4096):
-                emit_sid("download_chunk", {"file": filename, "chunk": chunk}, to=request.sid)
+                emit_sid("download_chunk", {"file": filename, "chunk": chunk}, to=sid)
         
             if view:
-                emit_sid("view_download_complete", {"file": filename}, to=request.sid)
+                emit_sid("view_download_complete", {"file": filename}, to=sid)
             else:
-                emit_sid("download_complete", {"file": filename}, to=request.sid)
+                emit_sid("download_complete", {"file": filename}, to=sid)
 
     except FileNotFoundError:
-       socketio.emit_sid("download_error", {"file": file}, to=request.sid)
+       socketio.emit_sid("download_error", {"file": file}, to=sid)
 
 @socketio.event
 def upload_complete(payload):
@@ -149,19 +146,20 @@ def upload_complete(payload):
 
 @socketio.event
 def download(data):
+    sid = request.sid
     file = data.get("file")
     try:
         with open(os.path.join(UPLOAD_DIR, file), "rb") as f:
             while chunk := f.read(4096):
-                socketio.emit("download_chunk", {"file": file, "chunk": chunk}, to=request.sid)
+                socketio.emit("download_chunk", {"file": file, "chunk": chunk}, to=sid)
         
         if data.get("on_complete", 0) == 1:
-            socketio.emit("view_download_complete", {"file": file}, to=request.sid)
+            socketio.emit("view_download_complete", {"file": file}, to=sid)
         else:
-            socketio.emit("download_complete", {"file": file}, to=request.sid)
+            socketio.emit("download_complete", {"file": file}, to=sid)
 
     except FileNotFoundError:
-        socketio.emit("download_error", {"file": file}, to=request.sid)
+        socketio.emit("download_error", {"file": file}, to=sid)
 
 # ----------------------------------------------------
 # Trim history helper
@@ -317,12 +315,12 @@ def handle_leave_bg(data):
 
 @socketio.on("disconnect")
 def handle_disconnect():
+    sid = request.sid
     print("DISCONNECT EVENT:", {
         "disconnecting_sid": sid,
         "disconnecting_user": sid_users.get(sid),
         "authenticated_before": authenticated.copy(),
     })
-    sid = request.sid
     if sid in sid_users:
         user = sid_users[sid]
         print(f"{user} disconnected!")
@@ -395,7 +393,6 @@ def handle_send_message(data):
 @socketio.on("ping_user")
 def handle_ping_user(data):
     if not require_auth():
-        raise Exception("Not authorised")
         return False
 
     sender = data.get("from")
@@ -407,7 +404,6 @@ def handle_ping_user(data):
             "to": target,
             "reason": "offline"
         }, room=request.sid)
-        raise Exception("Not online")
         return None
     success = emit_sid("ping_alert", {
         "from": sender,
@@ -418,7 +414,6 @@ def handle_ping_user(data):
             "to": target,
             "reason": "offline"
         }, room=request.sid)
-        raise Exception("Could not ping")
 
 # ----------------------------------------------------
 # /online support
