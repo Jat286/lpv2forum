@@ -11,6 +11,7 @@ sid_users = {}      # sid -> username
 token_sids = {}
 sid_tokens = {}
 sid_roles = {}
+sid_typing = {}
 
 # Store chat history per room
 chat_history = {
@@ -432,6 +433,14 @@ def handle_online_request(data):
         "room": room,
         "users": online_users
     }, room=request.sid)
+
+# ----------------------------------------------------
+# typing support
+# ----------------------------------------------------
+
+@socketio.event
+def typing(data):
+    sid_typing[request.sid] = data.get("typing", False)
 
 # ----------------------------------------------------
 
