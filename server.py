@@ -441,6 +441,12 @@ def handle_online_request(data):
 @socketio.event
 def typing(data):
     sid_typing[request.sid] = data.get("typing", False)
+    users_typing = {
+        sid_users[sid]: sid_typing[sid]
+        for sid in sid_users
+        if sid in sid_typing}
+    room = data.get("room", "general")
+    socketio.emit("users_typing", {"room": room, "typing": users_typing})
 
 # ----------------------------------------------------
 
