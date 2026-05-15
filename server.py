@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from datetime import datetime
-import os
+import os, zoneinfo
+uk = zoneinfo.ZoneInfo("Europe/London")
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", transports=["websocket"])
 
@@ -36,6 +37,9 @@ VALID_DEVICE_TOKENS = {
 
 # Track which Socket.IO sessions are authenticated
 authenticated = set()
+
+def now():
+    return datetime.now(uk)
 
 def return_main(sids):
     for sid in sids:
@@ -222,7 +226,7 @@ def handle_join_main(data):
         "room": room,
         "user": "SYSTEM",
         "text": f"{user} has joined the room.",
-        "timestamp": datetime.now().strftime("%H:%M:%S")
+        "timestamp": now().strftime("%H:%M:%S")
     }
 
     chat_history.setdefault(room, []).append(system_msg)
@@ -249,7 +253,7 @@ def handle_join_bg(data):
         "room": room,
         "user": "SYSTEM",
         "text": f"{user} has connected.",
-        "timestamp": datetime.now().strftime("%H:%M:%S")
+        "timestamp": now().strftime("%H:%M:%S")
     }
 
     chat_history.setdefault(room, []).append(system_msg)
@@ -276,7 +280,7 @@ def handle_leave_main(data):
         "room": room,
         "user": "SYSTEM",
         "text": f"{user} has left the room.",
-        "timestamp": datetime.now().strftime("%H:%M:%S")
+        "timestamp": now().strftime("%H:%M:%S")
     }
 
     chat_history.setdefault(room, []).append(system_msg)
@@ -306,7 +310,7 @@ def handle_leave_bg(data):
         "room": room,
         "user": "SYSTEM",
         "text": f"{user} has disconnected.",
-        "timestamp": datetime.now().strftime("%H:%M:%S")
+        "timestamp": now().strftime("%H:%M:%S")
     }
 
     chat_history.setdefault(room, []).append(system_msg)
