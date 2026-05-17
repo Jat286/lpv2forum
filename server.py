@@ -456,5 +456,18 @@ def typing(data):
 
 # ----------------------------------------------------
 
+@app.get("/toast_reply")
+def toast_reply():
+    sender = request.args.get("from")
+    to = request.args.get("to")
+    message = request.args.get("message", "")
+
+    # Emit the ping to the correct user
+    socketio.emit("ping_user", {
+        "from": sender,
+        "to": to,
+        "message": message
+    })
+
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=False)
