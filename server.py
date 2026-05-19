@@ -351,6 +351,9 @@ def handle_history(data):
     if not require_auth():
         return False
 
+    if sid_tokens.get(request.sid) == "theotokenafeeisd" and room != "averycoolroom":
+        return False
+
     room = data.get("room") if isinstance(data, dict) else data
 
     if room not in chat_history:
