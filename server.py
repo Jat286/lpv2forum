@@ -338,9 +338,12 @@ def handle_disconnect():
         # Remove from maps
         token = sid_tokens.get(sid)
         if token:
-            token_sids.get(token, set()).discard(sid)
-            if not token_sids.get(token):
-                token_sids.pop(token, None)
+            sids = token_sids.get(token)
+            if sids:
+                sids.discard(sid)
+                if not sids:
+                    token_sids.pop(token)
+            
         user_sids.pop(user, None)
         sid_users.pop(sid, None)
         authenticated.discard(sid)
