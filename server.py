@@ -6,7 +6,7 @@ from tic_tac_toe import T3Namespace
 uk = zoneinfo.ZoneInfo("Europe/London")
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", transports=["websocket"])
-socketio.on_namespace(TicTacToeNamespace("/tictactoe"))
+socketio.on_namespace(T3Namespace("/tictactoe"))
 
 # Track which socket belongs to which username
 user_sids = {}      # username -> sid
