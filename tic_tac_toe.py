@@ -16,4 +16,4 @@ class T3Namespace(Namespace):
       emit("move", data, room=data["room"])
 
   def on_reset(self, data):
-      emit("restart", data, room=data["room"])
+      emit("reset", data, room=data["room"])
