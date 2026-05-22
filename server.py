@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from datetime import datetime
 import os, zoneinfo
-from tictactoe_namespace import T3Namespace
+from tic_tac_toe import T3Namespace
 uk = zoneinfo.ZoneInfo("Europe/London")
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", transports=["websocket"])
