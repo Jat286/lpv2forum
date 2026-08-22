@@ -168,6 +168,47 @@ def download(data):
     except FileNotFoundError:
         socketio.emit("download_error", {"file": file}, to=sid)
 
+@socketio.event
+def request_lesson(data):
+    sid = request.sid
+    sender = data["from"]
+    target = data["target"]
+    if target not in user_sids:
+        if offlineReturn:
+            emit("request_failed", {
+                "to": target,
+                "reason": "offline"
+            }, room=request.sid)
+        return None
+    success = emit_sid("request_lesson", {"from" : sender}, to=user_sids[target])
+    if offlineReturn and not success:
+        emit("request_failed", {
+            "to": target,
+            "reason": "offline"
+        }, room=request.sid)
+
+@socketio.event
+def lesson(data):
+    sid = request.sid
+    target = data["target"]
+    lesson = data["lesson"]
+    room = data["room"]
+    teacher = data["teacher"]
+    if target not in user_sids:
+        if offlineReturn:
+            emit("request_failed", {
+                "to": target,
+                "reason": "offline"
+            }, room=request.sid)
+        return None
+    success = emit_sid("lesson", {"lesson" : lesson, "room" : room, "teacher" : teacher}, to=user_sids[target])
+    if offlineReturn and not success:
+        emit("request_failed", {
+            "to": target,
+            "reason": "offline"
+        }, room=request.sid)
+    
+
 # ----------------------------------------------------
 # Trim history helper
 # ----------------------------------------------------
