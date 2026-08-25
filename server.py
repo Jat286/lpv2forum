@@ -169,7 +169,7 @@ def download(data):
         socketio.emit("download_error", {"file": file}, to=sid)
 
 @socketio.event
-def request_lesson(data):
+def lesson_request(data):
     sid = request.sid
     sender = data["from"]
     target = data["target"]
