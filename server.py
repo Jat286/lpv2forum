@@ -43,8 +43,24 @@ CY0ayUkcvqbPLWYmv0k6ODzv26tKt/cw8l37r1VeCUkrelZmQXi/MWn3nSfcr1n7
 ntm4B39JtdRHO6tem/nUDiMtk+rT1uC1rdqtrr/PsLvBDwR3AVWyW55wWpOLhlbp
 nQIDAQAB
 -----END PUBLIC KEY-----"""),
-    "client2": serialization.load_pem_public_key("replaceme123"),
-    "client3": serialization.load_pem_public_key("replaceme123")}
+    "client2": serialization.load_pem_public_key(b"""-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAutRN8A4K30zann63xWgg
+qErV7p+P82AVtkVFR0XEaJR8mjXGWk2aalpk6jRejDmNvppOnixnuRuM3w9o47ad
+Wdw4DVKnXyf/Lbd0xr4TftSCtOT6lMu0XxXwtACScibJRLePcvLVusCfkT4g2CZk
+vaA8QvcazgD0D2y5Nx6yoqloRXG4Sv7iTuR+qqYrZPQrOboeqwC9mto6YgF0WzCx
+CY0ayUkcvqbPLWYmv0k6ODzv26tKt/cw8l37r1VeCUkrelZmQXi/MWn3nSfcr1n7
+ntm4B39JtdRHO6tem/nUDiMtk+rT1uC1rdqtrr/PsLvBDwR3AVWyW55wWpOLhlbp
+nQIDAQAB
+-----END PUBLIC KEY-----"""),
+    "client3": serialization.load_pem_public_key(b"""-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAutRN8A4K30zann63xWgg
+qErV7p+P82AVtkVFR0XEaJR8mjXGWk2aalpk6jRejDmNvppOnixnuRuM3w9o47ad
+Wdw4DVKnXyf/Lbd0xr4TftSCtOT6lMu0XxXwtACScibJRLePcvLVusCfkT4g2CZk
+vaA8QvcazgD0D2y5Nx6yoqloRXG4Sv7iTuR+qqYrZPQrOboeqwC9mto6YgF0WzCx
+CY0ayUkcvqbPLWYmv0k6ODzv26tKt/cw8l37r1VeCUkrelZmQXi/MWn3nSfcr1n7
+ntm4B39JtdRHO6tem/nUDiMtk+rT1uC1rdqtrr/PsLvBDwR3AVWyW55wWpOLhlbp
+nQIDAQAB
+-----END PUBLIC KEY-----""")}
 
 challenges = {}
 authenticated = set()
@@ -81,7 +97,7 @@ def handle_auth(data):
     clientID = data.get("id")
 
     if clientID not in clientPublicKeys:
-        print(f"Unauthorized device with token: {token}")
+        print(f"Unauthorized device with i: {clientID}")
         disconnect()
         return False  # disconnect client
 
@@ -93,7 +109,7 @@ def handle_auth(data):
 def handle_verify(data):
     sessionData = challenges.get(request.sid)
     if not sessionData:
-        diconnect()
+        disconnect()
         return False
 
     signature = bytes.fromhex(data.get("signature", ""))
