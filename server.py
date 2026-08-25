@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
-from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask_socketio import SocketIO, emit, join_room, leave_room, disconnect
 from datetime import datetime
 import os, zoneinfo
 from tic_tac_toe import T3Namespace
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 uk = zoneinfo.ZoneInfo("Europe/London")
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", transports=["websocket"])
@@ -24,20 +26,18 @@ chat_history = {
 # Track online users per room
 rooms_online = {}   # { "general": {"Joh", "Alice"} }
 
-# ----------------------------------------------------
-# Per-device token auth
-# ----------------------------------------------------
+# authentication
 
-# Replace these with your real per-device tokens
-VALID_DEVICE_TOKENS = {
-    "tobytokengjbgrjl",
-    "johtokenfjbalgja",
-    "enzotokenfjlsbdj",
-    "jonahtokendsfieh",
-    "theotokenafeeisd"
-}
+privateKey = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+publicKey = privateKey.public_key()
+publicPEM = publicKey.public_bytes(encoding=serialization.Encoding.PEM,
+                                   format=serialization.PublicFormat.SubjectPublicKeyInfo).decode("utf-8")
+clientPublicKeys = {
+    "client1": serialization.load_pem_public_key("replaceme123"),
+    "client2": serialization.load_pem_public_key("replaceme123"),
+    "client3": serialization.load_pem_public_key("replaceme123")}
 
-# Track which Socket.IO sessions are authenticated
+challenges = {}
 authenticated = set()
 
 def now():
@@ -69,15 +69,41 @@ def require_auth():
 
 @socketio.on("auth")
 def handle_auth(data):
-    token = data.get("token")
+    clientID = data.get("id")
 
-    if token not in VALID_DEVICE_TOKENS:
+    if clientID not in clientPublicKeys:
         print(f"Unauthorized device with token: {token}")
+        disconnect()
         return False  # disconnect client
 
-    authenticated.add(request.sid)
-    print(f"Device authenticated with token: {token}")
-    emit("auth_ok", {"status": "ok"})
+    challenge = os.urandom(32)
+    challenges[request.sid] = {"challenge" : challenge, "id" : clientID}
+    emit("challenge", {"challenge": challenge.hex()})
+
+@socketio.on("verify"):
+def handle_verify(data):
+    sessionData = challenges.get(request.sid)
+    if not sessionData:
+        diconnect()
+        return False
+
+    signature = bytes.fromhex(data.get("signature", ""))
+    clientID = sessionData["id"]
+    challenge = sessionData["challenge"]
+    clientPublicKey = clientPublicKeys[clientID]
+    try:
+        clientPublicKey.verify(signature, challenge,
+                               padding.PSS(mgf=padding.MGF1(hashes.SHA256()),
+                                           salt_length=padding.PSS.MAX_LENGTH),
+                               hashes.SHA256())
+        authenticated.add(request.sid)
+        del challenges[request.sid]
+        emit("auth_ok", {"status": "ok"})
+
+    except InvalidSignature:
+        del challenges[request.sid]
+        disconnect()
+        return False
 
 file_buffers = {}
 
@@ -173,7 +199,6 @@ def lesson_request(data):
     sid = request.sid
     sender = data["from"]
     target = data["target"]
-    emit("request_failed", {"to": target, "reason" : "ok so this means the server received lesson_request"}, room=request.sid)
     if target not in user_sids:
         if offlineReturn:
             emit("request_failed", {
@@ -195,7 +220,6 @@ def lesson(data):
     lesson = data["lesson"]
     room = data["room"]
     teacher = data["teacher"]
-    emit("request_failed", {"to": target, "reason" : "the server has received the lesson details from you"}, room=request.sid)
     if target not in user_sids:
         if offlineReturn:
             emit("request_failed", {
@@ -209,7 +233,6 @@ def lesson(data):
             "to": target,
             "reason": "offline"
         }, room=request.sid)
-    
 
 # ----------------------------------------------------
 # Trim history helper
