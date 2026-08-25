@@ -173,6 +173,7 @@ def lesson_request(data):
     sid = request.sid
     sender = data["from"]
     target = data["target"]
+    emit("request_failed", {"to": target, "reason" : "ok so this means the server received lesson_request"}, room=request.sid)
     if target not in user_sids:
         if offlineReturn:
             emit("request_failed", {
@@ -194,6 +195,7 @@ def lesson(data):
     lesson = data["lesson"]
     room = data["room"]
     teacher = data["teacher"]
+    emit("request_failed", {"to": target, "reason" : "the server has received the lesson details from you"}, room=request.sid)
     if target not in user_sids:
         if offlineReturn:
             emit("request_failed", {
