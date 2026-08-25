@@ -92,9 +92,9 @@ def require_auth():
     print("AUTH CHECK:", request.sid, request.sid in authenticated, authenticated)
     return request.sid in authenticated
 
-@socketio.on("auth")
+@socketio.on("connect")
 def handle_auth(data):
-    clientID = data.get("id")
+    clientID = data.get("id", "")
 
     if clientID not in clientPublicKeys:
         print(f"Unauthorized device with i: {clientID}")
@@ -119,7 +119,7 @@ def handle_verify(data):
     try:
         clientPublicKey.verify(signature, challenge,
                                padding.PSS(mgf=padding.MGF1(hashes.SHA256()),
-                                           salt_length=padding.PSS.MAX_LENGTH),
+                                           salt_length=padding.PSS.DIGEST_LENGTH),
                                hashes.SHA256())
         authenticated.add(request.sid)
         del challenges[request.sid]
