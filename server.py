@@ -5,6 +5,7 @@ import os, zoneinfo
 from tic_tac_toe import T3Namespace
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.exceptions import InvalidSignature
 uk = zoneinfo.ZoneInfo("Europe/London")
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", transports=["websocket"])
@@ -80,7 +81,7 @@ def handle_auth(data):
     challenges[request.sid] = {"challenge" : challenge, "id" : clientID}
     emit("challenge", {"challenge": challenge.hex()})
 
-@socketio.on("verify"):
+@socketio.on("verify")
 def handle_verify(data):
     sessionData = challenges.get(request.sid)
     if not sessionData:
