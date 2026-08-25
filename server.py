@@ -180,7 +180,7 @@ def lesson_request(data):
                 "reason": "offline"
             }, room=request.sid)
         return None
-    success = emit_sid("request_lesson", {"from" : sender}, to=user_sids[target])
+    success = emit_sid("lesson_request", {"from" : sender}, to=user_sids[target])
     if offlineReturn and not success:
         emit("request_failed", {
             "to": target,
