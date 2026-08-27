@@ -104,14 +104,14 @@ def require_auth():
 @socketio.on("connect")
 def handle_auth(auth=None):
     if not auth or not isinstance(auth, dict):
-        # raise ConnectionRefusedError
+        raise ConnectionRefusedError
         disconnect()
         return False
         
     clientID = auth.get("id", "")
 
     if clientID not in clientPublicKeys:
-        raise ConnectionRefusedError
+        # raise ConnectionRefusedError
         disconnect()
         return False  # disconnect client
 
