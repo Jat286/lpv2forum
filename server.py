@@ -104,6 +104,7 @@ def require_auth():
 @socketio.on("connect")
 def handle_auth(auth=None):
     if not auth or not isinstance(auth, dict):
+        emit("fail", {"error": 1}, to=request.sid)
         disconnect()
         return False
         
@@ -111,6 +112,7 @@ def handle_auth(auth=None):
 
     if clientID not in clientPublicKeys:
         print(f"Unauthorized device with i: {clientID}")
+        emit("fail", {"error": 2}, to=request.sid)
         disconnect()
         return False  # disconnect client
 
