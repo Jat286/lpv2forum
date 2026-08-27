@@ -60,6 +60,15 @@ vaA8QvcazgD0D2y5Nx6yoqloRXG4Sv7iTuR+qqYrZPQrOboeqwC9mto6YgF0WzCx
 CY0ayUkcvqbPLWYmv0k6ODzv26tKt/cw8l37r1VeCUkrelZmQXi/MWn3nSfcr1n7
 ntm4B39JtdRHO6tem/nUDiMtk+rT1uC1rdqtrr/PsLvBDwR3AVWyW55wWpOLhlbp
 nQIDAQAB
+-----END PUBLIC KEY-----"""),
+    "test": serialization.load_pem_public_key(b"""-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuoeMkKm48RkvKeYeugDi
+snoG8t1Akm7gUzqRp2eQ5sBoS0/p6TyUfdHS6RB0Ib6GDYJuBXU7M88zRJWWLTOB
+8tlRa4wW+NOCHFvte7dXjuiuoQDefav3Ez+SelvoQYICoIfarc42Owbbkqhy4fi5
+GSXv3AfQnkaD4wLjCxQPQ0xXFy1qqH5BawZyTnR/D4cUkXkeWKvRQEIXiFoPd/VL
+7lSmX8wQCB0STff2Nk3vqrLDxRLxBmix76Ghc3soNrpCQ9RGTnz8zjUXigdSu7Ja
++yU2EDSANZ/867Niv4SqEtw7C3nlFCF2ZUYIhwvNwAQGA5M6PHlMg1CyKuzICCFT
+bQIDAQAB
 -----END PUBLIC KEY-----""")}
 
 challenges = {}
