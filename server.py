@@ -109,10 +109,9 @@ def handle_auth(auth=None):
         
     clientID = auth.get("id", "")
 
-    if clientID not in clientPublicKeys:
-        # raise ConnectionRefusedError
-        disconnect()
-        return False  # disconnect client
+    # if clientID not in clientPublicKeys:
+    #     disconnect()
+    #     return False  # disconnect client
 
     challenge = os.urandom(32)
     challenges[request.sid] = {"challenge" : challenge, "id" : clientID}
