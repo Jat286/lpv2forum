@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_socketio import SocketIO, emit, join_room, leave_room, disconnect, ConnectionRefusedError
+from flask_socketio import SocketIO, emit, join_room, leave_room, disconnect
 from datetime import datetime
 import os, zoneinfo
 from tic_tac_toe import T3Namespace
@@ -103,10 +103,9 @@ def require_auth():
 
 @socketio.on("connect")
 def handle_auth(auth=None):
-    if not auth or not isinstance(auth, dict):
-        # raise ConnectionRefusedError
-        disconnect()
-        return False
+    # if not auth or not isinstance(auth, dict):
+    #     disconnect()
+    #     return False
         
     clientID = auth.get("id", "")
 
