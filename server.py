@@ -102,8 +102,12 @@ def require_auth():
     return request.sid in authenticated
 
 @socketio.on("connect")
-def handle_auth(data):
-    clientID = data.get("id", "")
+def handle_auth(auth=None):
+    if not auth or not isinstance(auth, dict):
+        disconnect()
+        return False
+        
+    clientID = auth.get("id", "")
 
     if clientID not in clientPublicKeys:
         print(f"Unauthorized device with i: {clientID}")
@@ -112,7 +116,7 @@ def handle_auth(data):
 
     challenge = os.urandom(32)
     challenges[request.sid] = {"challenge" : challenge, "id" : clientID}
-    emit("challenge", {"challenge": challenge.hex()})
+    emit("challenge", {"challenge": challenge.hex()}, to=request.sid)
 
 @socketio.on("verify")
 def handle_verify(data):
