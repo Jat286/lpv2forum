@@ -103,6 +103,7 @@ def require_auth():
 
 @socketio.on("connect")
 def handle_auth(auth=None):
+    emit("fail", {"error": 0}, to=request.sid)
     if not auth or not isinstance(auth, dict):
         emit("fail", {"error": 1}, to=request.sid)
         disconnect()
