@@ -103,15 +103,15 @@ def require_auth():
 
 @socketio.on("connect")
 def handle_auth(auth=None):
-    # if not auth or not isinstance(auth, dict):
-    #     disconnect()
-    #     return False
+    if not auth or not isinstance(auth, dict):
+        disconnect()
+        return False
         
     clientID = auth.get("id", "")
 
-    # if clientID not in clientPublicKeys:
-    #     disconnect()
-    #     return False  # disconnect client
+    if clientID not in clientPublicKeys:
+        disconnect()
+        return False  # disconnect client
 
     challenge = os.urandom(32)
     challenges[request.sid] = {"challenge" : challenge, "id" : clientID}
