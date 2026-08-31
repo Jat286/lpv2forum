@@ -104,7 +104,7 @@ def require_auth():
 @socketio.on("connect")
 def handle_auth(auth=None):
     if not auth or not isinstance(auth, dict):
-        return False
+        pass
         
     clientID = auth.get("id", "")
 
