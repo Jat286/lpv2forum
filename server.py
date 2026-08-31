@@ -110,7 +110,7 @@ def handle_auth(auth=None):
 
     # if clientID not in clientPublicKeys.keys():
     #     return False
-    id = "test"
+    clientId = "test"
     challenge = os.urandom(32)
     challenges[request.sid] = {"challenge" : challenge, "id" : clientID}
     emit("challenge", {"challenge": challenge.hex()}, to=request.sid)
