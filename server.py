@@ -288,17 +288,6 @@ def broadcast_online(room):
 # WebSocket events
 # ----------------------------------------------------
 
-@socketio.on("connect")
-def handle_connect(auth):
-    token = auth.get("token") if auth else None
-    if token is None or token not in VALID_DEVICE_TOKENS:
-        return False
-
-    sid = request.sid
-    authenticated.add(sid)
-    token_sids.setdefault(token, set()).add(sid)
-    sid_tokens[sid] = token
-
 @socketio.on("ping_dnd")
 def handle_ping_dnd(data):
     sender = data["to"]
