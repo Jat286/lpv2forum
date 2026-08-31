@@ -43,24 +43,6 @@ CY0ayUkcvqbPLWYmv0k6ODzv26tKt/cw8l37r1VeCUkrelZmQXi/MWn3nSfcr1n7
 ntm4B39JtdRHO6tem/nUDiMtk+rT1uC1rdqtrr/PsLvBDwR3AVWyW55wWpOLhlbp
 nQIDAQAB
 -----END PUBLIC KEY-----"""),
-    "client2": serialization.load_pem_public_key(b"""-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAutRN8A4K30zann63xWgg
-qErV7p+P82AVtkVFR0XEaJR8mjXGWk2aalpk6jRejDmNvppOnixnuRuM3w9o47ad
-Wdw4DVKnXyf/Lbd0xr4TftSCtOT6lMu0XxXwtACScibJRLePcvLVusCfkT4g2CZk
-vaA8QvcazgD0D2y5Nx6yoqloRXG4Sv7iTuR+qqYrZPQrOboeqwC9mto6YgF0WzCx
-CY0ayUkcvqbPLWYmv0k6ODzv26tKt/cw8l37r1VeCUkrelZmQXi/MWn3nSfcr1n7
-ntm4B39JtdRHO6tem/nUDiMtk+rT1uC1rdqtrr/PsLvBDwR3AVWyW55wWpOLhlbp
-nQIDAQAB
------END PUBLIC KEY-----"""),
-    "client3": serialization.load_pem_public_key(b"""-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAutRN8A4K30zann63xWgg
-qErV7p+P82AVtkVFR0XEaJR8mjXGWk2aalpk6jRejDmNvppOnixnuRuM3w9o47ad
-Wdw4DVKnXyf/Lbd0xr4TftSCtOT6lMu0XxXwtACScibJRLePcvLVusCfkT4g2CZk
-vaA8QvcazgD0D2y5Nx6yoqloRXG4Sv7iTuR+qqYrZPQrOboeqwC9mto6YgF0WzCx
-CY0ayUkcvqbPLWYmv0k6ODzv26tKt/cw8l37r1VeCUkrelZmQXi/MWn3nSfcr1n7
-ntm4B39JtdRHO6tem/nUDiMtk+rT1uC1rdqtrr/PsLvBDwR3AVWyW55wWpOLhlbp
-nQIDAQAB
------END PUBLIC KEY-----"""),
     "test": serialization.load_pem_public_key(b"""-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuoeMkKm48RkvKeYeugDi
 snoG8t1Akm7gUzqRp2eQ5sBoS0/p6TyUfdHS6RB0Ib6GDYJuBXU7M88zRJWWLTOB
@@ -103,14 +85,13 @@ def require_auth():
 
 @socketio.on("connect")
 def handle_connect(auth=None):
-    """if not auth or not isinstance(auth, dict):
+    if not auth or not isinstance(auth, dict):
         return False
         
     clientID = auth.get("id", "")
 
-    if clientID not in clientPublicKeys.keys():
-        return False"""
-    clientID = "test"
+    if clientID not in clientPublicKeys:
+        return False
     challenge = os.urandom(32)
     challenges[request.sid] = {"challenge" : challenge, "id" : clientID}
     emit("challenge", {"challenge": challenge.hex()}, to=request.sid)
