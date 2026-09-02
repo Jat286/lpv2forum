@@ -43,14 +43,14 @@ CY0ayUkcvqbPLWYmv0k6ODzv26tKt/cw8l37r1VeCUkrelZmQXi/MWn3nSfcr1n7
 ntm4B39JtdRHO6tem/nUDiMtk+rT1uC1rdqtrr/PsLvBDwR3AVWyW55wWpOLhlbp
 nQIDAQAB
 -----END PUBLIC KEY-----"""),
-    "test": serialization.load_pem_public_key(b"""-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuoeMkKm48RkvKeYeugDi
-snoG8t1Akm7gUzqRp2eQ5sBoS0/p6TyUfdHS6RB0Ib6GDYJuBXU7M88zRJWWLTOB
-8tlRa4wW+NOCHFvte7dXjuiuoQDefav3Ez+SelvoQYICoIfarc42Owbbkqhy4fi5
-GSXv3AfQnkaD4wLjCxQPQ0xXFy1qqH5BawZyTnR/D4cUkXkeWKvRQEIXiFoPd/VL
-7lSmX8wQCB0STff2Nk3vqrLDxRLxBmix76Ghc3soNrpCQ9RGTnz8zjUXigdSu7Ja
-+yU2EDSANZ/867Niv4SqEtw7C3nlFCF2ZUYIhwvNwAQGA5M6PHlMg1CyKuzICCFT
-bQIDAQAB
+    "client2": serialization.load_pem_public_key(b"""-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtJ3nbcMK8w6M2Q4MfadD
+K4FEjJa2oH4rMyQ5ZKUg3TBNN8pzjv4hHRs4FXb0pAb3u9uEGl4vxCe/y3czoI/S
+0YTYCMDClxixvf0prOWhhn+Fv8MVbDtdUeEEEBey2XnrvhHlw0XEY8qjgUfeOgeo
+v2XnbstUcb33T9S2GnoTxHCVDYczFFMqCkmFFnu8aSkeK2cvYhVpZTaLai8VYB03
+R2OVWDKPOiPPqJYETaN8zw3MqDASXQ1yucMhHJ36HZiZ/h3Dg4YcMupnB8hgyKfG
+hLWN/GHa2B2Xnf/SsbNefV1azIUGrEq+MK8/tsNFoP4TzTz89XZ9jVxt+NLav6IG
+MQIDAQAB
 -----END PUBLIC KEY-----""")}
 
 challenges = {}
