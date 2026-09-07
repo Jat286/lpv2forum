@@ -217,14 +217,13 @@ def handle_lesson_request(data):
     sender = data["from"]
     target = data["target"]
     if target not in user_sids:
-        if offlineReturn:
-            emit("request_failed", {
-                "to": target,
-                "reason": "offline"
-            }, room=request.sid)
+        emit("request_failed", {
+            "to": target,
+            "reason": "offline"
+        }, room=request.sid)
         return None
     success = emit_sid("lesson_request", {"from" : sender}, to=user_sids[target])
-    if offlineReturn and not success:
+    if not success:
         emit("request_failed", {
             "to": target,
             "reason": "offline"
