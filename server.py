@@ -69,13 +69,10 @@ def return_main(sids):
 def emit_sid(event, data, to=None):
     if to is None:
         return False
-    token = sid_tokens.get(to, None)
-    if token is None:
-        return False
-    sids = token_sids.get(token, [])
-    if not sids:
-        return False
-    sid = return_main(sids)
+    # if not sids:
+    #     return False
+    # sid = return_main(sids)
+    sid = to
     socketio.emit(event, data, to=sid)
     return True
 
@@ -213,7 +210,6 @@ def download(data):
 
 @socketio.on("lesson_request")
 def handle_lesson_request(data):
-    sid = request.sid
     sender = data["from"]
     target = data["target"]
     if target not in user_sids:
