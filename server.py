@@ -211,8 +211,8 @@ def download(data):
     except FileNotFoundError:
         socketio.emit("download_error", {"file": file}, to=sid)
 
-@socketio.event
-def lesson_request(data):
+@socketio.on("lesson_request")
+def handle_lesson_request(data):
     sid = request.sid
     sender = data["from"]
     target = data["target"]
@@ -230,8 +230,8 @@ def lesson_request(data):
             "reason": "offline"
         }, room=request.sid)
 
-@socketio.event
-def lesson(data):
+@socketio.on("lesson")
+def handle_lesson(data):
     sid = request.sid
     target = data["target"]
     lesson = data["lesson"]
