@@ -14,8 +14,6 @@ socketio.on_namespace(T3Namespace("/tictactoe"))
 # Track which socket belongs to which username
 user_sids = {}      # username -> sid
 sid_users = {}      # sid -> username
-token_sids = {}
-sid_tokens = {}
 sid_roles = {}
 sid_typing = {}
 
@@ -69,10 +67,15 @@ def return_main(sids):
 def emit_sid(event, data, to=None):
     if to is None:
         return False
-    # if not sids:
-    #     return False
-    # sid = return_main(sids)
-    sid = to
+
+    user = sid_users.get(to, None)
+    if not user:
+        return False
+
+    sids = user_sids.get(user, None)
+    if not sids:
+        return False
+    sid = return_main(sids)
     socketio.emit(event, data, to=sid)
     return True
 
@@ -276,10 +279,8 @@ def handle_join_main(data):
 
     room = data.get("room")
     user = data.get("user", "Unknown")
-    if sid_tokens.get(request.sid) == "theotokenafeeisd" and room != "averycoolroom":
-        return False
     # Track username <-> sid
-    user_sids[user] = request.sid
+    user_sids.setdefault("user", set()).add(request.sid)
     sid_users[request.sid] = user
     sid_roles[request.sid] = "main"
 
@@ -300,7 +301,7 @@ def handle_join_main(data):
     chat_history.setdefault(room, []).append(system_msg)
     trim_history(room)
 
-    socketio.emit("new_message", system_msg, room=room, skip_sid=request.sid)
+    socketio.emit("new_message", system_msg, room=room)
 
 @socketio.on("join_bg")
 def handle_join_bg(data):
@@ -309,10 +310,8 @@ def handle_join_bg(data):
 
     room = data.get("room")
     user = data.get("user", "Unknown")
-    if sid_tokens.get(request.sid) == "theotokenafeeisd" and room != "averycoolroom":
-        return False
     # Track username <-> sid
-    user_sids[user] = request.sid
+    user_sids.setdefault("user", set()).add(request.sid)
     sid_users[request.sid] = user
     sid_roles[request.sid] = "bg"
     join_room(room)
@@ -326,6 +325,8 @@ def handle_join_bg(data):
 
     chat_history.setdefault(room, []).append(system_msg)
     trim_history(room)
+
+    socketio.emit("new_message", system_msg, room=room, skip_sid=request.sid)
 
 @socketio.on("leave_room")
 def handle_leave_main(data):
@@ -404,15 +405,8 @@ def handle_disconnect():
                 broadcast_online(room)
 
         # Remove from maps
-        token = sid_tokens.get(sid)
-        if token:
-            sids = token_sids.get(token)
-            if sids:
-                sids.discard(sid)
-                if not sids:
-                    token_sids.pop(token)
-            
-        user_sids.pop(user, None)
+
+        user_sids[user].discard(sid)
         sid_users.pop(sid, None)
         authenticated.discard(sid)
         print("AUTHENTICATED_AFTER:", authenticated)
@@ -422,11 +416,7 @@ def handle_history(data):
     if not require_auth():
         return False
 
-    if sid_tokens.get(request.sid) == "theotokenafeeisd" and room != "averycoolroom":
-        return False
-
     room = data.get("room") if isinstance(data, dict) else data
-
     if room not in chat_history:
         chat_history[room] = []
 
@@ -489,7 +479,7 @@ def handle_ping_user(data):
     success = emit_sid("ping_alert", {
         "from": sender,
         "message": message
-    }, to=user_sids[target])
+    }, to=return_main(user_sids[target]))
     if offlineReturn and not success:
         emit("ping_failed", {
             "to": target,
