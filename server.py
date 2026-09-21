@@ -62,6 +62,7 @@ def return_main(sids):
         role = sid_roles.get(sid, "main")
         if role == "main":
             return sid
+    socketio.emit("request_failed", {"reason": "no main sid found"}, to=request.sid)
     return sids[0]
 
 def emit_sid(event, data, to=None):
