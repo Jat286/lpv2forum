@@ -67,6 +67,7 @@ def return_main(sids):
 
 def emit_sid(event, data, to=None):
     if to is None:
+        socketio.emit("request_failed", {"reason": "no target"}, to=request.sid)
         return False
 
     user = sid_users.get(to, None)
@@ -79,6 +80,8 @@ def emit_sid(event, data, to=None):
         socketio.emit("request_failed", {"reason": "sids not found in user_sids"}, to=request.sid)
         return False
     sid = return_main(sids)
+    if not sid:
+        socketio.emit("request_failed", {"reason": "no sid"}, to=request.sid)
     socketio.emit(event, data, to=sid)
     return True
 
@@ -448,11 +451,7 @@ def handle_send_message(data):
         return False
 
     room = data.get("room", "general")
-
-    if room not in chat_history:
-        chat_history[room] = []
-
-    chat_history[room].append(data)
+    chat_history.setdefault(room, []).append(data)
     trim_history(room)
 
     # If trimming happened, resend trimmed history to everyone in the room
@@ -474,6 +473,7 @@ def handle_ping_user(data):
     # If target is not online, send LOCAL ONLY message
     if target not in user_sids:
         if offlineReturn:
+            socketio.emit("request_failed", {"reason": "target not in user_sids"}, to=request.sid)
             emit("ping_failed", {
                 "to": target,
                 "reason": "offline"
@@ -482,8 +482,9 @@ def handle_ping_user(data):
     success = emit_sid("ping_alert", {
         "from": sender,
         "message": message
-    }, to=return_main(user_sids[target]))
+    }, to=target)
     if offlineReturn and not success:
+        socketio.emit("request_failed", {"reason": "no success"}, to=request.sid)
         emit("ping_failed", {
             "to": target,
             "reason": "offline"
