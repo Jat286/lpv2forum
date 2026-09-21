@@ -70,10 +70,12 @@ def emit_sid(event, data, to=None):
 
     user = sid_users.get(to, None)
     if not user:
+        socketio.emit("request_failed", {"reason": "user not found in sid_users"}, to=request.sid)
         return False
 
     sids = user_sids.get(user, None)
     if not sids:
+        socketio.emit("request_failed", {"reason": "sids not found in user_sids"}, to=request.sid)
         return False
     sid = return_main(sids)
     socketio.emit(event, data, to=sid)
@@ -517,6 +519,14 @@ def typing(data):
         if sid in sid_typing}
     room = data.get("room", "general")
     socketio.emit("users_typing", {"room": room, "typing": users_typing})
+
+# ----------------------------------------------------
+# keeps the server awake while a user is online
+# ----------------------------------------------------
+
+@app.route("/health")
+def health():
+    return "ok", 200
 
 # ----------------------------------------------------
 
