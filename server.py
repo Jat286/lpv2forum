@@ -62,26 +62,26 @@ def return_main(sids):
         role = sid_roles.get(sid, "main")
         if role == "main":
             return sid
-    socketio.emit("request_failed", {"reason": "no main sid found"}, to=request.sid)
+    emit("request_failed", {"reason": "no main sid found"}, room=request.sid)
     return sids[0]
 
 def emit_sid(event, data, to=None):
     if to is None:
-        socketio.emit("request_failed", {"reason": "no target"}, to=request.sid)
+        emit("request_failed", {"reason": "no target"}, room=request.sid)
         return False
 
     user = sid_users.get(to, None)
     if not user:
-        socketio.emit("request_failed", {"reason": "user not found in sid_users"}, to=request.sid)
+        emit("request_failed", {"reason": "user not found in sid_users"}, room=request.sid)
         return False
 
     sids = user_sids.get(user, None)
     if not sids:
-        socketio.emit("request_failed", {"reason": "sids not found in user_sids"}, to=request.sid)
+        emit("request_failed", {"reason": "sids not found in user_sids"}, room=request.sid)
         return False
     sid = return_main(sids)
     if not sid:
-        socketio.emit("request_failed", {"reason": "no sid"}, to=request.sid)
+        emit("request_failed", {"reason": "no sid"}, room=request.sid)
     socketio.emit(event, data, to=sid)
     return True
 
@@ -473,7 +473,7 @@ def handle_ping_user(data):
     # If target is not online, send LOCAL ONLY message
     if target not in user_sids:
         if offlineReturn:
-            socketio.emit("request_failed", {"reason": "target not in user_sids"}, to=request.sid)
+            emit("request_failed", {"reason": "target not in user_sids"}, room=request.sid)
             emit("ping_failed", {
                 "to": target,
                 "reason": "offline"
@@ -484,7 +484,7 @@ def handle_ping_user(data):
         "message": message
     }, to=target)
     if offlineReturn and not success:
-        socketio.emit("request_failed", {"reason": "no success"}, to=request.sid)
+        emit("request_failed", {"reason": "no success"}, room=request.sid)
         emit("ping_failed", {
             "to": target,
             "reason": "offline"
