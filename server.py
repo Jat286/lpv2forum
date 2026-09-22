@@ -83,6 +83,7 @@ def emit_sid(event, data, to=None):
     if not sid:
         emit("request_failed", {"reason": "no sid"}, room=request.sid)
     socketio.emit(event, data, to=sid)
+    emit("request_failed", {"reason": "success in emit_sid"}, room=request.sid)
     return True
 
 def require_auth():
