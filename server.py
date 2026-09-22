@@ -228,7 +228,7 @@ def handle_lesson_request(data):
             "reason": "offline"
         }, room=request.sid)
         return None
-    success = emit_sid("lesson_request", {"from" : sender}, to=user_sids[target])
+    success = emit_sid("lesson_request", {"from" : sender}, to=target)
     if not success:
         emit("request_failed", {
             "to": target,
@@ -249,7 +249,7 @@ def handle_lesson(data):
                 "reason": "offline"
             }, room=request.sid)
         return None
-    success = emit_sid("lesson", {"lesson" : lesson, "room" : room, "teacher" : teacher}, to=user_sids[target])
+    success = emit_sid("lesson", {"lesson" : lesson, "room" : room, "teacher" : teacher}, to=target)
     if offlineReturn and not success:
         emit("request_failed", {
             "to": target,
@@ -475,7 +475,6 @@ def handle_ping_user(data):
     # If target is not online, send LOCAL ONLY message
     if target not in user_sids.keys():
         if offlineReturn:
-            emit("request_failed", {"reason": user_sids.keys()}, room=request.sid)
             emit("ping_failed", {
                 "to": target,
                 "reason": "offline"
@@ -486,7 +485,6 @@ def handle_ping_user(data):
         "message": message
     }, to=target)
     if offlineReturn and not success:
-        emit("request_failed", {"reason": "no success"}, room=request.sid)
         emit("ping_failed", {
             "to": target,
             "reason": "offline"
