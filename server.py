@@ -61,6 +61,7 @@ def return_main(sids):
     for sid in sids:
         role = sid_roles.get(sid, "main")
         if role == "main":
+            emit("request_failed", {"reason": user_sids}, room=request.sid)
             return sid
     emit("request_failed", {"reason": "no main sid found"}, room=request.sid)
     return sids[0]
