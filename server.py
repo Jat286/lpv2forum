@@ -78,6 +78,7 @@ def emit_sid(event, data, to=None):
     sids = user_sids.get(user, None)
     if not sids:
         emit("request_failed", {"reason": "sids not found in user_sids"}, room=request.sid)
+        emit("request_failed", {"reason": user_sids}, room=request.sid)
         return False
     sid = return_main(sids)
     if not sid:
@@ -474,7 +475,7 @@ def handle_ping_user(data):
     # If target is not online, send LOCAL ONLY message
     if target not in user_sids.keys():
         if offlineReturn:
-            emit("request_failed", {"reason": str(user_sids.keys())}, room=request.sid)
+            emit("request_failed", {"reason": user_sids.keys()}, room=request.sid)
             emit("ping_failed", {
                 "to": target,
                 "reason": "offline"
