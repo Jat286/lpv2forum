@@ -296,8 +296,7 @@ def handle_join_main(data):
 
     chat_history.setdefault(room, []).append(system_msg)
     trim_history(room)
-
-    socketio.emit("new_message", system_msg, room=room)
+    socketio.emit("new_message", system_msg, room=room, skip_sid=request.sid)
 
 @socketio.on("join_bg")
 def handle_join_bg(data):
