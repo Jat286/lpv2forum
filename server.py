@@ -61,32 +61,20 @@ def return_main(sids):
     for sid in sids:
         role = sid_roles.get(sid, "main")
         if role == "main":
-            emit("request_failed", {"reason": user_sids}, room=request.sid)
             return sid
-    emit("request_failed", {"reason": "no main sid found"}, room=request.sid)
     return sids[0]
 
 def emit_sid(event, data, to=None):
     if to is None:
-        emit("request_failed", {"reason": "no target"}, room=request.sid)
         return False
 
-    user = sid_users.get(to, None)
-    if not user:
-        emit("request_failed", {"reason": "user not found in sid_users"}, room=request.sid)
-        return False
-
-    sids = user_sids.get(user, None)
+    sids = user_sids.get(to, None)
     if not sids:
-        emit("request_failed", {"reason": "sids not found in user_sids"}, room=request.sid)
-        emit("request_failed", {"reason": user_sids}, room=request.sid)
         return False
     sid = return_main(sids)
     if not sid:
-        emit("request_failed", {"reason": "no sid"}, room=request.sid)
         return False
     socketio.emit(event, data, to=sid)
-    emit("request_failed", {"reason": "success in emit_sid"}, room=request.sid)
     return True
 
 def require_auth():
@@ -224,7 +212,7 @@ def download(data):
 def handle_lesson_request(data):
     sender = data["from"]
     target = data["target"]
-    if target not in user_sids.keys():
+    if target not in user_sids:
         emit("request_failed", {
             "to": target,
             "reason": "offline"
@@ -239,20 +227,18 @@ def handle_lesson_request(data):
 
 @socketio.on("lesson")
 def handle_lesson(data):
-    sid = request.sid
     target = data["target"]
     lesson = data["lesson"]
     room = data["room"]
     teacher = data["teacher"]
     if target not in user_sids:
-        if offlineReturn:
-            emit("request_failed", {
-                "to": target,
-                "reason": "offline"
-            }, room=request.sid)
+        emit("request_failed", {
+            "to": target,
+            "reason": "offline"
+        }, room=request.sid)
         return None
     success = emit_sid("lesson", {"lesson" : lesson, "room" : room, "teacher" : teacher}, to=target)
-    if offlineReturn and not success:
+    if not success:
         emit("request_failed", {
             "to": target,
             "reason": "offline"
@@ -290,7 +276,7 @@ def handle_join_main(data):
     room = data.get("room")
     user = data.get("user", "Unknown")
     # Track username <-> sid
-    user_sids.setdefault("user", set()).add(request.sid)
+    user_sids.setdefault(user, set()).add(request.sid)
     sid_users[request.sid] = user
     sid_roles[request.sid] = "main"
 
@@ -321,7 +307,7 @@ def handle_join_bg(data):
     room = data.get("room")
     user = data.get("user", "Unknown")
     # Track username <-> sid
-    user_sids.setdefault("user", set()).add(request.sid)
+    user_sids.setdefault(user, set()).add(request.sid)
     sid_users[request.sid] = user
     sid_roles[request.sid] = "bg"
     join_room(room)
@@ -416,7 +402,7 @@ def handle_disconnect():
 
         # Remove from maps
 
-        user_sids[user].discard(sid)
+        user_sids.setdefault(user, set()).discard(sid)
         sid_users.pop(sid, None)
         authenticated.discard(sid)
         print("AUTHENTICATED_AFTER:", authenticated)
@@ -475,7 +461,7 @@ def handle_ping_user(data):
     message = data.get("message", "")
     offlineReturn = data.get("offlineReturn", True)
     # If target is not online, send LOCAL ONLY message
-    if target not in user_sids.keys():
+    if target not in user_sids:
         if offlineReturn:
             emit("ping_failed", {
                 "to": target,
