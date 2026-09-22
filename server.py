@@ -222,7 +222,7 @@ def download(data):
 def handle_lesson_request(data):
     sender = data["from"]
     target = data["target"]
-    if target not in user_sids:
+    if target not in user_sids.keys():
         emit("request_failed", {
             "to": target,
             "reason": "offline"
