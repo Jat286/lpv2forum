@@ -83,6 +83,7 @@ def emit_sid(event, data, to=None):
     sid = return_main(sids)
     if not sid:
         emit("request_failed", {"reason": "no sid"}, room=request.sid)
+        return False
     socketio.emit(event, data, to=sid)
     emit("request_failed", {"reason": "success in emit_sid"}, room=request.sid)
     return True
