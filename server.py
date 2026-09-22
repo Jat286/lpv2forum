@@ -472,9 +472,9 @@ def handle_ping_user(data):
     message = data.get("message", "")
     offlineReturn = data.get("offlineReturn", True)
     # If target is not online, send LOCAL ONLY message
-    if target not in user_sids:
+    if target not in user_sids.keys():
         if offlineReturn:
-            emit("request_failed", {"reason": "target not in user_sids"}, room=request.sid)
+            emit("request_failed", {"reason": str(user_sids.keys())}, room=request.sid)
             emit("ping_failed", {
                 "to": target,
                 "reason": "offline"
