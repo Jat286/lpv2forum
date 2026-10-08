@@ -130,7 +130,7 @@ def get_completed_uploads():
 
 @socketio.event
 def files():
-    emit_sid("server_uploads", {"files" : get_completed_uploads()}, to=request.sid)
+    emit("server_uploads", {"files" : get_completed_uploads()}, to=request.sid)
 
 @socketio.event
 def upload_chunk(payload):
@@ -155,15 +155,15 @@ def request_latest(data):
     try: # same as download but assumes on_complete is 1
         with open(file, "rb") as f:
             while chunk := f.read(4096):
-                emit_sid("download_chunk", {"file": filename, "chunk": chunk}, to=sid)
+                emit("download_chunk", {"file": filename, "chunk": chunk}, to=sid)
         
             if view:
-                emit_sid("view_download_complete", {"file": filename}, to=sid)
+                emit("view_download_complete", {"file": filename}, to=sid)
             else:
-                emit_sid("download_complete", {"file": filename}, to=sid)
+                emit("download_complete", {"file": filename}, to=sid)
 
     except FileNotFoundError:
-       socketio.emit_sid("download_error", {"file": file}, to=sid)
+       socketio.emit("download_error", {"file": file}, to=sid)
 
 @socketio.event
 def upload_complete(payload):
@@ -173,7 +173,7 @@ def upload_complete(payload):
         with open(os.path.join(UPLOAD_DIR, name), "wb") as f:
             f.write(file_buffers[name])
         del file_buffers[name]
-        emit_sid("upload_complete", {"file": name}, to=sid)
+        emit("upload_complete", {"file": name}, to=sid)
 
         if name.lower().endswith((".png", ".jpg", ".jpeg")):
             files = [os.path.join(UPLOAD_DIR, f) for f in os.listdir(UPLOAD_DIR) if os.path.isfile(os.path.join(UPLOAD_DIR, f)) and f.lower().endswith((".png", ".jpg", ".jpeg"))] # gets all of the server's files
@@ -189,7 +189,7 @@ def upload_complete(payload):
                 socketio.emit("view_download_complete", {"file": filename})
 
     except:
-        emit_sid("upload_error", {"file": name}, to=sid)
+        emit("upload_error", {"file": name}, to=sid)
 
 @socketio.event
 def download(data):
